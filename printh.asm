@@ -1,4 +1,4 @@
-; printh outputs the hexadecimal representation of bits present in address DX
+; printh outputs the hexadecimal representation of bits present in DX
 printh:
 	pusha						; save register state
 	mov ax, 4					; number of characters to print
@@ -24,6 +24,6 @@ printh_end:
 	popa
 	ret
 
-HEX_PATTERN: db "0x****", 0
+HEX_PATTERN: db "0x****", 0x0a, 0x0d, 0
 HEX_TABLE: db "0123456789abcdef"
 
