@@ -18,7 +18,7 @@ gdt_code:	; the code segment descriptor
 	db 0x0			; Base (bits 24-31)
 
 gdt_data:	; the data segmetn descriptor		
-	; Same as codd segment except for the type flags:
+	; Same as code segment except for the type flags:
 	; type flags: (code)0 (expand down)0 (writable)1 (accessed)0 -> 0010b
 	dw 0xffff		; Limit (bits 0-15)
 	dw 0x0			; Base (bits 0-15)
