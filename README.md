@@ -31,6 +31,7 @@ for doing so.
 ````shell
 make cross_compiler
 ```
+
 This will actually build our cross compiler. It may take a few minutes to 
 complete. Its binary will be available at `~/opt/cross/bin` together with 
 the binaries of the `binutils` we built in the previous step.
