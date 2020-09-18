@@ -12,9 +12,7 @@ Make >= 3
 You need a cross-compiler to compile your kernel, since your system compiler 
 assumer you are writing code that will run on your hosted operating system.
 
-Thus, the first step is to download the cross compiler and its dependecies
-we are going to use:
-
+Thus, the first step is to download the cross compiler and its dependecies:
 
 ```shell
 make cross_compiler_download
