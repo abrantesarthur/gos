@@ -10,7 +10,7 @@ PREFIX=$(OPT)/cross
 .PHONY: directories libiconv binutils cross_compiler
 
 directories:
-	@#make directory where cross-compiler binary will be stored
+	@#make PREFIX directory where cross-compiler binary will be stored
 	@if ! [ -d $(OPT) ]; then \
 		mkdir $(OPT); \
 	fi
@@ -82,7 +82,7 @@ binutils: libiconv
 		echo Binutils built at $(PREFIX); \
 	fi
 
-cross_compiler: binutils
+cross_compiler_download: binutils
 	@cd $(BUILDS) && \
 	if ! [ -f "gcc-10.2.0.tar.xz" ]; then \
 		echo Downloading gcc-10.2.tar.xz && \
@@ -93,7 +93,9 @@ cross_compiler: binutils
 		echo Extracting gcc-10.2.0.tar.xz && \
 		tar -xf gcc-10.2.0.tar.xz; \
 	fi 
-	@echo gcc-10.2.0 extracted at $(BUILDS) && \
+	@echo gcc-10.2.0 extracted at $(BUILDS)
+
+cross_compiler:
 	cd $(BUILD_GCC) && \
 	echo Building gcc-10.2.0 at $(PREFIX) && \
 	export PATH=$(PREFIX)/bin:$$PATH && \
