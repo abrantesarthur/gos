@@ -30,7 +30,7 @@ command, folow the [instructions](https://wiki.osdev.org/Libgcc_without_red_zone
 for doing so.
 
 ```shell
-make cross_compiler_download
+make cross_compiler
 ```
 
 This will actually build our cross compiler. It may take a few minutes to 
