@@ -15,6 +15,7 @@ assumer you are writing code that will run on your hosted operating system.
 Thus, the first step is to download the cross compiler and its dependecies
 we are going to use:
 
+
 ```shell
 make cross_compiler_download
 ```
@@ -28,8 +29,8 @@ that we build 'Libgcc' without the "red zone". Thus, before issuing the next
 command, folow the [instructions](https://wiki.osdev.org/Libgcc_without_red_zone)
 for doing so.
 
-````shell
-make cross_compiler
+```shell
+make cross_compiler_download
 ```
 
 This will actually build our cross compiler. It may take a few minutes to 
