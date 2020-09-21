@@ -24,8 +24,8 @@ generic x86-64 architecture, and download `GCC-10.2.0`.
 
 Since we are building a compiler for the x86-64 architecture, it is important
 that we build [libgcc](https://wiki.osdev.org/Libgcc) without the "red zone".
-Thus, before issuing the next command, folow the
-[instructions](https://wiki.osdev.org/Libgcc_without_red_zone) for doing so.
+Thus, before issuing the next command, follow these
+[instructions](https://wiki.osdev.org/Libgcc_without_red_zone).
 
 ```shell
 make cross_compiler
