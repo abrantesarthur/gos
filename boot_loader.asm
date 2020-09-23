@@ -39,7 +39,7 @@ load_kernel:
 	mov bx, 0x0000
 	mov es, bx
 	mov bx, KERNEL_OFFSET		
-	mov al, 1 					; load 15 sectors	
+	mov al, 1 					; load 1 sectors	
 	call load_disk
 	ret
 

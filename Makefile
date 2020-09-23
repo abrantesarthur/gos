@@ -16,12 +16,29 @@ LD=$(BIN)/x86_64-elf-ld
 # KERNEL
 ###############################################################################
 
-.PHONY: kernel
-kernel: kernel.c boot_loader.asm
-	nasm -f bin boot_loader.asm -o boot_loader.bin
-	$(GCC) -ffreestanding -c kernel.c -o kernel.o	
-	$(LD) -o kernel.bin -Ttext 0x1000 kernel.o --oformat binary
-	cat boot_loader.bin kernel.bin > os-image
+.PHONY: os-image clean run-qemu
+all: os-image run-qemu
+
+kernel.o: kernel.c
+	$(GCC) -ffreestanding -c $^ -o $@
+
+kernel_prefix.o: kernel_prefix.asm
+	nasm -f elf64 $^ -o $@
+
+kernel.bin: kernel_prefix.o kernel.o
+	$(LD) -o $@ -Ttext 0x1000 $^ --oformat binary
+
+boot_loader.bin: boot_loader.asm
+	nasm -f bin $^ -o $@
+
+os-image: boot_loader.bin kernel.bin
+	cat $^ > $@
+
+clean: *.o *.bin
+	rm *.o *.bin os-image
+
+run-qemu: os-image
+	qemu-system-x86_64 -machine pc os-image
 
 
 ###############################################################################
