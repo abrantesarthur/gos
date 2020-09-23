@@ -1,6 +1,6 @@
 ; -----------------------------------------------------------------------------
 ; BOOT_LOADER:	this first 512 bytes are read into memory by the BIOS routine.
-;				it switches the CPU to 32-bit protected mode
+;				it switches the CPU to 64-bit long mode
 ; -----------------------------------------------------------------------------
 [org 0x7c00]				; tell the assembler the address where BIOS
 							; loads the boot sector
@@ -11,7 +11,7 @@ mov sp, bp
 mov si, MSG_REAL_MODE
 call printf
 
-call switch_to_pm			; we never return from here
+call switch_to_lm			; we never return from here
 
 jmp $
 
@@ -74,10 +74,9 @@ CODE_SEG equ gdt_code - gdt_start
 DATA_SEG equ gdt_data - gdt_start
 
 ; -----------------------------------------------------------------------------
-; Switch to protected mode
+; Switch to long mode
 ; -----------------------------------------------------------------------------
-[bits 16]
-switch_to_pm:
+switch_to_lm:
 	cli						; switch off interrupts until we have set-up the 
 							; protected mode interrupt vector otherwise 
 							; interrupts will fail
@@ -90,14 +89,14 @@ switch_to_pm:
 	or eax, 0x1				; the first byte of CR0, a control regisiter
 	mov cr0, eax
 
-	jmp CODE_SEG:init_pm	; Make a far jump (i.e. to a new segment) to our
-							; 32-bit code. This also forces the CPU to flush
+	jmp CODE_SEG:init_lm	; Make a far jump (i.e. to a new segment) to our
+							; 64-bit code. This also forces the CPU to flush
 							; its cache of pre-fetched and real-mode decoded
 							; instructions, whicc could cause problems.
 
-[bits 32]
+[bits 64]
 ; Initialize registers and the stack once in PM.
-init_pm:
+init_lm:
 	mov ax, DATA_SEG		; Now in protected mode, our old segments are
 	mov ds, ax				; meaningless, so we point our segment registers
 	mov ss, ax				; to the data selector we defined in GDT.
@@ -108,23 +107,23 @@ init_pm:
 	mov ebp, 0x90000
 	mov esp, ebp
 
-	call BEGIN_PM
+	call BEGIN_LM
 
 ; -----------------------------------------------------------------------------
-; This is where we arrive after switching to and initializing protected mode
+; This is where we arrive after switching to and initializing long mode
 ; -----------------------------------------------------------------------------
-BEGIN_PM:
-	mov ebx, MSG_PROT_MODE
-	call printf_pm
+BEGIN_LM:
+	mov rbx, MSG_PROT_MODE
+	call printf_lm
 
 	jmp $					; hang
 
 ; Global variables
 MSG_REAL_MODE db "Started in 16-bit real mode", 0
-MSG_PROT_MODE db "Succesfully landed in 32-bit protected mode", 0
+MSG_PROT_MODE db "Succesfully landed in 64-bit long mode", 0
 
 ;------------------------------------------------------------------------------
-; printf_pm
+; printf_lm
 ; -----------------------------------------------------------------------------
 
 ; Define some contants
@@ -132,25 +131,27 @@ SCREEN_ADDR equ 0xb8000
 WHITE_ON_BLACK equ 0x0f
 
 ; print_pm prints a null terminated string pointed to by EBX
-printf_pm:
-	pusha
-	mov edx, SCREEN_ADDR		; set edx to start of video memory
+printf_lm:
+	push rdx
+	push rax
+	mov rdx, SCREEN_ADDR		; set edx to start of video memory
 
-printf_pm_loop:
-	mov al, [ebx]				; store the character at EBX in AL
+printf_lm_loop:
+	mov al, [rbx]				; store the character at EBX in AL
 	mov ah, WHITE_ON_BLACK		; Store attributes in AH
 
 	cmp al, 0					; if (al == 0), at end of string, so
-	je printf_pm_done				; jump to done
+	je printf_lm_done				; jump to done
 	
-	mov [edx], ax				; store char and attributes at screen cell
+	mov [rdx], ax				; store char and attributes at screen cell
 
-	add ebx, 1					; go to next char
-	add edx, 2					; go to next cell
-	jmp printf_pm_loop
+	add rbx, 1					; go to next char
+	add rdx, 2					; go to next cell
+	jmp printf_lm_loop
 
-printf_pm_done:
-	popa
+printf_lm_done:
+	pop rax
+	pop rdx
 	ret
 ; Bootsector padding
 times 510-($-$$) db 0

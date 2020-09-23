@@ -7,6 +7,29 @@ BUILD_GCC=$(BUILDS)/build-gcc
 BUILD_LIBICONV=$(BUILDS)/build-libiconv
 PREFIX=$(OPT)/cross
 
+# BINARIES
+BIN=$(PREFIX)/bin
+GCC=$(BIN)/x86_64-elf-gcc
+LD=$(BIN)/x86_64-elf-ld
+
+###############################################################################
+# KERNEL
+###############################################################################
+
+.PHONY: kernel
+kernel: kernel.c boot_loader.asm
+	@nasm -f bin boot_loader.asm -o boot_loader.bin
+	$(GCC) -ffreestanding -c kernel.c -o kernel.o	
+	$(LD) -o kernel.bin -Ttext 0x1000 kernel.o --oformat binary
+	@cat boot_loader.bin kernel.bin > os-image
+
+
+###############################################################################
+#	BINUTILS
+###############################################################################
+
+
+
 .PHONY: directories libiconv binutils cross_compiler
 
 directories:
