@@ -18,10 +18,10 @@ LD=$(BIN)/x86_64-elf-ld
 
 .PHONY: kernel
 kernel: kernel.c boot_loader.asm
-	@nasm -f bin boot_loader.asm -o boot_loader.bin
+	nasm -f bin boot_loader.asm -o boot_loader.bin
 	$(GCC) -ffreestanding -c kernel.c -o kernel.o	
 	$(LD) -o kernel.bin -Ttext 0x1000 kernel.o --oformat binary
-	@cat boot_loader.bin kernel.bin > os-image
+	cat boot_loader.bin kernel.bin > os-image
 
 
 ###############################################################################

@@ -22,4 +22,3 @@ load_disk:
 
 DISK_ERROR_MSG db "An error occured while reading disk", 0x0a, 0x0d, 0
 DISK_SUCCESS_MSG db "Succefully read from disk", 0x0a, 0x0d, 0
-
