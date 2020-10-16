@@ -16,30 +16,33 @@ LD=$(BIN)/x86_64-elf-ld
 # KERNEL
 ###############################################################################
 
+C_SOURCES = $(wildcard kernel/*.c drivers/*.c)
+HEADERS = $(wildcard kernel/*.h drivers/*.h)
+OBJ = ${C_SOURCES:.c=.o}
+
 .PHONY: os-image clean run-qemu
 all: os-image run-qemu
 
-kernel.o: kernel.c
-	$(GCC) -ffreestanding -c $^ -o $@
+kernel/kernel_prefix.o: kernel/kernel_prefix.asm
+	nasm -f elf64 $< -o $@
 
-kernel_prefix.o: kernel_prefix.asm
-	nasm -f elf64 $^ -o $@
+%.o: %.c
+	$(GCC) -ffreestanding -c $< -o $@
 
-kernel.bin: kernel_prefix.o kernel.o
+kernel/kernel.bin: kernel/kernel_prefix.o ${OBJ} 
 	$(LD) -o $@ -Ttext 0x1000 $^ --oformat binary
 
-boot_loader.bin: boot_loader.asm
+boot/boot_loader.bin: boot/boot_loader.asm
 	nasm -f bin $^ -o $@
 
-os-image: boot_loader.bin kernel.bin
+os-image: boot/boot_loader.bin kernel/kernel.bin
 	cat $^ > $@
 
-clean: *.o *.bin
-	rm *.o *.bin os-image
+clean: ${wildcard *.o *.bin}
+	rm kernel/*.o drivers/*.o kernel/*.bin drivers/*.bin boot/*.bin os-image
 
 run-qemu: os-image
 	qemu-system-x86_64 -machine pc os-image
-
 
 ###############################################################################
 #	BINUTILS
