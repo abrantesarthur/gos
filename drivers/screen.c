@@ -88,6 +88,12 @@ void print(char *message) {
 	print_at(message, -1, -1);
 }
 
+void clear_screen() {
+	for(int row = 0; row < MAX_ROWS; row++) {
+		for (int col = 0; col < MAX_COLS; col++) {
+			print_char(' ', col, row, WHITE_ON_BLACK);
+		}
+	}
 
-
-
+	set_cursor_position(get_screen_offset(0, 0));
+}
