@@ -27,6 +27,9 @@ that we build [libgcc](https://wiki.osdev.org/Libgcc) without the "red zone".
 Thus, before issuing the next command, folow the
 [instructions](https://wiki.osdev.org/Libgcc_without_red_zone) for doing so.
 
+The instructions tell you to modify your [GCC](https://wiki.osdev.org/GCC)
+sources. Know that they will be available at `~/opt/cross`.
+
 ```shell
 make cross_compiler
 ```
