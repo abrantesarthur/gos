@@ -1,5 +1,5 @@
 # GOS
-An operating system written entirely in GO, from scratch.
+An operating system written from scratch.
 
 ## Development
 
