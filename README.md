@@ -1,5 +1,5 @@
 # GOS
-An operating system written from scratch.
+An x86 bootloader written from scratch.
 
 ## Development
 
