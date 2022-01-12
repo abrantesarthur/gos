@@ -3,9 +3,7 @@ An x86 bootloader written from scratch.
 
 ## Development
 
-Gos requires
-
-Make >= 3
+Gos requires Make >= 3. Unfortunately, the bootloader doesn't support the MacBook M1 architecture yet.
 
 ### Setting Up
 
