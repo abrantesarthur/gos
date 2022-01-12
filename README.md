@@ -45,4 +45,4 @@ previous step.
 make run
 ```
 
-This will compile the bootloader and run it on `qemu`
+This will compile the bootloader and run it on `qemu`. If you don't have it installed, `brew install qemu` should do it :)
