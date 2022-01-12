@@ -7,7 +7,7 @@ Gos requires
 
 Make >= 3
 
-### Workflow
+### Setting Up
 
 You need a cross-compiler to compile your kernel, since your system compiler 
 assumes you are writing code that will run on your hosted operating system.
@@ -39,4 +39,10 @@ complete. Its binary will be available at `~/opt/cross/bin` as
 `x86_64-elf-gcc` together with the binaries of the `binutils` we built in the
 previous step.
 
+### Running
 
+```shell
+make run
+```
+
+This will compile the bootloader and run it on `qemu`

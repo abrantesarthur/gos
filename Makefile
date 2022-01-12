@@ -48,8 +48,6 @@ run-qemu: os-image
 #	BINUTILS
 ###############################################################################
 
-
-
 .PHONY: directories libiconv binutils cross_compiler
 
 directories:
@@ -152,11 +150,16 @@ cross_compiler:
 	make install-gcc && \
 	make install-target-libgcc;
 
-boot_sector.bin: boot_sector.asm printf.asm load_disk.asm printh.asm
-	nasm -f bin boot_sector.asm -o boot_sector.bin
-
 test_load_disk.bin: printf.asm printh.asm load_disk.asm
 	nasm -f bin test_load_disk.asm -o test_load_disk.bin
+
+###############################################################################
+#	RUNNING
+###############################################################################
+
+.PHONY: boot_sector.bin
+boot_sector.bin: boot_sector.asm printf.asm load_disk.asm printh.asm
+	nasm -f bin boot_sector.asm -o boot_sector.bin
 
 .PHONY: run
 run: boot_sector.bin 
