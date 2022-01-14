@@ -1,5 +1,5 @@
 # GOS
-An x86 bootloader written from scratch.
+A self-driven project where I was curious about how an OS I wanted to understand how an OS gets loaded into memory at boot time so I wrote an X86 bootloader from scratch.
 
 ## Development
 
