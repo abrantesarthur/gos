@@ -103,7 +103,7 @@ binutils: libiconv
 	@cd $(BUILDS) && \
 	if ! [ -f binutils-2.35.tar.xz ]; then \
 		echo Downloading binutils-2.35.tar.xz && \
-		wget https://mirror.nbtelecom.com.br/gnu/binutils/binutils-2.35.tar.xz; \
+		wget https://ftp.gnu.org/gnu/binutils/binutils-2.35.tar.xz; \
 	fi && \
 	echo binutils-2.35.tar.xz downloaded at $(BUILDS) && \
 	if ! [ -d "binutils-2.35" ]; then \
