@@ -30,7 +30,7 @@ MSG_LOAD_KERNEL	db "Loading kernel into memory.", 0x0a, 0x0d, 0
 
 
 ; -----------------------------------------------------------------------------
-; load_kernel loads the kernel code from diskt into offset 0x1000
+; load_kernel loads the kernel code from disk into offset 0x1000
 ; -----------------------------------------------------------------------------
 load_kernel:
 	mov si, MSG_LOAD_KERNEL		; print a message to say we are loading the kernel
@@ -247,7 +247,3 @@ printf_lm_done:
 ; Bootsector padding
 times 510-($-$$) db 0
 dw 0xaa55
-
-
-dw 256 0xabcd
-dw 256 0x1234

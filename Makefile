@@ -12,37 +12,6 @@ BIN=$(PREFIX)/bin
 GCC=$(BIN)/x86_64-elf-gcc
 LD=$(BIN)/x86_64-elf-ld
 
-###############################################################################
-# KERNEL
-###############################################################################
-
-C_SOURCES = $(wildcard kernel/*.c drivers/*.c)
-HEADERS = $(wildcard kernel/*.h drivers/*.h)
-OBJ = ${C_SOURCES:.c=.o}
-
-.PHONY: os-image clean run-qemu
-all: os-image run-qemu
-
-kernel/kernel_prefix.o: kernel/kernel_prefix.asm
-	nasm -f elf64 $< -o $@
-
-%.o: %.c
-	$(GCC) -ffreestanding -c $< -o $@
-
-kernel/kernel.bin: kernel/kernel_prefix.o ${OBJ} 
-	$(LD) -o $@ -Ttext 0x1000 $^ --oformat binary
-
-boot/boot_loader.bin: boot/boot_loader.asm
-	nasm -f bin $^ -o $@
-
-os-image: boot/boot_loader.bin kernel/kernel.bin
-	cat $^ > $@
-
-clean: ${wildcard *.o *.bin}
-	rm kernel/*.o drivers/*.o kernel/*.bin drivers/*.bin boot/*.bin os-image
-
-run-qemu: os-image
-	qemu-system-x86_64 -machine pc os-image
 
 ###############################################################################
 #	BINUTILS
@@ -150,21 +119,38 @@ cross_compiler:
 	make install-gcc && \
 	make install-target-libgcc;
 
-test_load_disk.bin: printf.asm printh.asm load_disk.asm
-	nasm -f bin test_load_disk.asm -o test_load_disk.bin
-
 ###############################################################################
-#	RUNNING
+# RUN KERNEL
 ###############################################################################
 
-.PHONY: boot_sector.bin
-boot_sector.bin: boot_sector.asm printf.asm load_disk.asm printh.asm
-	nasm -f bin boot_sector.asm -o boot_sector.bin
+C_SOURCES = $(wildcard kernel/*.c drivers/*.c)
+HEADERS = $(wildcard kernel/*.h drivers/*.h)
+OBJ = ${C_SOURCES:.c=.o}
 
-.PHONY: run
-run: boot_sector.bin 
-	qemu-system-x86_64 boot_sector.bin
-	
-.PHONY: test_load_disk
-test_load_disk: test_load_disk.bin
-	qemu-system-x86_64 test_load_disk.bin
+.PHONY: os-image clean run-qemu run
+all: os-image run-qemu
+
+kernel/kernel_prefix.o: kernel/kernel_prefix.asm
+	nasm -f elf64 $< -o $@
+
+%.o: %.c
+	$(GCC) -ffreestanding -c $< -o $@
+
+kernel/kernel.bin: kernel/kernel_prefix.o ${OBJ} 
+	$(LD) -o $@ -Ttext 0x1000 $^ --oformat binary
+
+boot/boot_loader.bin: boot/boot_loader.asm
+	nasm -f bin $^ -o $@
+
+os-image: boot/boot_loader.bin kernel/kernel.bin
+	cat $^ > $@
+
+clean: ${wildcard *.o *.bin}
+	rm kernel/*.o drivers/*.o kernel/*.bin drivers/*.bin boot/*.bin os-image
+
+run-qemu: os-image
+	qemu-system-x86_64 -machine pc os-image
+
+.PHONY: 
+run: boot/boot_loader.bin 
+	qemu-system-x86_64 boot/boot_loader.bin
