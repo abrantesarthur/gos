@@ -244,11 +244,9 @@ printf_lm_done:
 	pop rax
 	pop rdx
 	ret
-; Bootsector padding
-times 510-($-$$) db 0
 
 ;------------------------------------------------------------------------------
-; By convention, the last 2 bytes of an intended boot sector must be 0xaa55
+; The boot sector must fit in 512 bytes, with the last 2 being a magic number.
 ; -----------------------------------------------------------------------------
-
+times 510-($-$$) db 0
 dw 0xaa55
