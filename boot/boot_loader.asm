@@ -2,8 +2,8 @@
 ; BOOT_LOADER:	this first 512 bytes are read into memory by the BIOS routine.
 ;				it switches the CPU to 64-bit long mode
 ; -----------------------------------------------------------------------------
-[org 0x7c00]				; tell the assembler the address where BIOS
-							; loads the boot sector
+[org 0x7c00]				; tell the assembler the address where BIOS loads this
+							; boot sector so it can correctly address labels herein
 
 KERNEL_OFFSET equ 0x1000	; Where we'll load the kernel
 
@@ -79,7 +79,7 @@ DISK_SUCCESS_MSG db "Succefully read from disk", 0x0a, 0x0d, 0
 ; -----------------------------------------------------------------------------
 printf:
 	pusha
-	mov ah, 0x0e	; int=10/ah=0x0e -> BIOS tele-typw output
+	mov ah, 0x0e	; int=10/ah=0x0e -> BIOS tele-type output
 	printf_loop:
 		mov al, [si]
 		cmp al, 0
@@ -248,5 +248,6 @@ printf_lm_done:
 ;------------------------------------------------------------------------------
 ; The boot sector must fit in 512 bytes, with the last 2 being a magic number.
 ; -----------------------------------------------------------------------------
+
 times 510-($-$$) db 0
 dw 0xaa55

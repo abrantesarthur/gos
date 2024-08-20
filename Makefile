@@ -127,7 +127,7 @@ C_SOURCES = $(wildcard kernel/*.c drivers/*.c)
 HEADERS = $(wildcard kernel/*.h drivers/*.h)
 OBJ = ${C_SOURCES:.c=.o}
 
-.PHONY: os-image clean run-qemu run
+.PHONY: os-image clean run-qemu run run-file
 all: os-image run-qemu
 
 kernel/kernel_prefix.o: kernel/kernel_prefix.asm
@@ -154,3 +154,8 @@ run-qemu: os-image
 .PHONY: 
 run: boot/boot_loader.bin 
 	qemu-system-x86_64 boot/boot_loader.bin
+
+.PHONY:
+run-file:
+	nasm -f bin $(f).asm -o $(f).bin && \
+	qemu-system-x86_64 $(f).bin
