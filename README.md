@@ -22,11 +22,9 @@ generic x86-64 architecture, and download `GCC-10.2.0`.
 
 Since we are building a compiler for the x86-64 architecture, it is important
 that we build [libgcc](https://wiki.osdev.org/Libgcc) without the "[red zone](https://wiki.osdev.org/Libgcc_without_red_zone)".
-Thus, before issuing the next command, folow the
-[instructions](https://wiki.osdev.org/Libgcc_without_red_zone) for doing so.
 
-The instructions tell you to modify your [GCC](https://wiki.osdev.org/GCC)
-sources. Know that they will be available at `~/opt/cross`.
+Thus, before issuing the next command, folow the
+[instructions](https://wiki.osdev.org/Libgcc_without_red_zone) for doing so. Note that, when they ask you to create a file `t-x86_64-elf`, you should do it in `~/src/gcc-10.2.0/gcc/config/i386/`. Similarly, the `config.gcc` file to be modified can be found at `~/src/gcc-10.2.0/gcc/config.gcc`.
 
 ```shell
 make cross_compiler
