@@ -17,7 +17,23 @@ LD=$(BIN)/x86_64-elf-ld
 #	BINUTILS
 ###############################################################################
 
-.PHONY: directories libiconv binutils cross_compiler
+.PHONY: directories utils libiconv binutils cross_compiler
+
+utils:
+	@# install homebrew if it doesn't exist
+	@if ! [ -e /opt/homebrew/bin/brew ]; then \
+		echo "Installing homebrew at /opt/Homebrew" && \
+		/bin/bash -c "$$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)" && \
+		echo adding homebrew to the PATH && \
+		echo; echo 'eval "$$(/opt/homebrew/bin/brew shellenv)"' >> $$HOME/.zprofile && \
+		eval "$$(/opt/homebrew/bin/brew shellenv)"; \
+	fi
+	@if ! [ -e /opt/homebrew/bin/wget ]; then \
+		echo "Installing wget at /opt/homebrew/bin" && \
+		brew install wget; \
+	fi
+	
+
 
 directories:
 	@#make PREFIX directory where cross-compiler binary will be stored
@@ -40,9 +56,8 @@ directories:
 	@if ! [ -d $(BUILD_LIBICONV) ]; then \
 		mkdir $(BUILD_LIBICONV); \
 	fi
-	
 
-libiconv: directories
+libiconv: utils directories
 	@# download libiconv file at BUILD_LIBICONV and build at /usr/local
 	@cd $(BUILDS) && \
 	if ! [ -f libiconv-1.16.tar.gz ]; then \
