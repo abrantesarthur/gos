@@ -3,11 +3,10 @@ SHELL=bash
 BUILDS=$$HOME/src
 OPT=$$HOME/opt
 BUILD_BINUTILS=$(BUILDS)/build-binutils
+GCC_SOURCE=$(BUILDS)/gcc-10.2.0
 BUILD_GCC=$(BUILDS)/build-gcc
 BUILD_LIBICONV=$(BUILDS)/build-libiconv
 PREFIX=$(OPT)/cross
-
-GCC_SOURCE=$(PREFIX)/gcc
 
 # BINARIES
 BIN=$(PREFIX)/bin
@@ -37,6 +36,14 @@ install_wget: install_brew
 		brew install wget; \
 	fi && \
 	source $$HOME/.zprofile
+
+install_gnu_sed: install_brew
+	@if ! [ -d /opt/homebrew/Cellar/gnu-sed ]; then \
+		echo "Installing gnu-sed at /opt/homebrew/bin" && \
+		brew install gnu-sed; \
+	fi && \
+	source $$HOME/.zprofile
+
 
 directories:
 	@#make PREFIX directory where cross-compiler binary will be stored
@@ -128,7 +135,23 @@ cross_compiler_download: binutils
 gcc_deps:
 	sudo port install gmp mpfr libmpc
 
-cross_compiler: gcc_deps
+# Build a libgcc multilib variant without red-zone requirement
+GCC_CONFIG=$(GCC_SOURCE)/gcc/config.gcc
+T_X86_64_ELF=$(GCC_SOURCE)/gcc/config/i386/t-x86_64-elf
+MULTILIB_CONFIG=
+disable_red_zone: install_gnu_sed
+	@if ! [ -f $(T_X86_64_ELF) ]; then \
+		echo Creating && \
+		sudo chown -R $(USER):admin $(BUILDS)/gcc-10.2.0 && \
+		touch $(T_X86_64_ELF); \
+	fi
+	truncate -s 0 $(T_X86_64_ELF) && \
+	echo MULTILIB_OPTIONS += mno-red-zone >> $(T_X86_64_ELF); \
+	echo MULTILIB_DIRNAMES += no-red-zone >> $(T_X86_64_ELF); \
+	gsed -i '/x86_64-\*-elf/a\	tmake_file="$${tmake_file} i386/t-x86_64-elf"' $(GCC_CONFIG); \
+	
+
+cross_compiler: cross_compiler_download gcc_deps disable_red_zone
 	cd $(BUILD_GCC) && \
 	echo Building gcc-10.2.0 at $(PREFIX) && \
 	export PATH=$(PREFIX)/bin:$$PATH && \
@@ -159,7 +182,6 @@ install_nasm: install_brew
 		echo "Installing nasm at /opt/homebrew/bin" && \
 		brew install nasm; \
 	fi
-
 
 kernel/kernel_prefix.o: kernel/kernel_prefix.asm install_nasm
 	nasm -f elf64 $< -o $@

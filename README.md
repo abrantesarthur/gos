@@ -20,17 +20,13 @@ This will take a few minutes to complete. It will download a more recent version
 build [GNU binutils](https://wiki.osdev.org/Binutils) targeting our
 generic x86-64 architecture, and download `GCC-10.2.0`.
 
-Since we are building a compiler for the x86-64 architecture, it is important
-that we build [libgcc](https://wiki.osdev.org/Libgcc) without the "[red zone](https://wiki.osdev.org/Libgcc_without_red_zone)".
-
-Thus, before issuing the next command, folow the
-[instructions](https://wiki.osdev.org/Libgcc_without_red_zone) for doing so. Note that, when they ask you to create a file `t-x86_64-elf`, you should do it in `~/src/gcc-10.2.0/gcc/config/i386/`. Similarly, the `config.gcc` file to be modified can be found at `~/src/gcc-10.2.0/gcc/config.gcc`.
+To actually build our cross compiler, do:
 
 ```shell
 make cross_compiler
 ```
 
-This will actually build our cross compiler. It may take a few minutes to complete. If it complains about `port` not being found, you can install it by following the instructions [here](https://www.macports.org/install.php).
+It may take a few minutes to complete. If it complains about `port` not being found, you can install it by following the instructions [here](https://www.macports.org/install.php).
 
 The cross compiler's binary will be available at `~/opt/cross/bin` as 
 `x86_64-elf-gcc` together with the binaries of the `binutils` we built in the `cross_compiler_download` step.
