@@ -26,7 +26,7 @@ To actually build our cross compiler, do:
 make cross_compiler
 ```
 
-It may take a few minutes to complete. If it complains about `port` not being found, you can install it by following the instructions [here](https://www.macports.org/install.php).
+It may take a few minutes to complete.
 
 The cross compiler's binary will be available at `~/opt/cross/bin` as 
 `x86_64-elf-gcc` together with the binaries of the `binutils` we built in the `cross_compiler_download` step.
