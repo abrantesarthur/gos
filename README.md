@@ -32,10 +32,10 @@ sources. Know that they will be available at `~/opt/cross`.
 make cross_compiler
 ```
 
-This will actually build our cross compiler. It may take a few minutes to 
-complete. Its binary will be available at `~/opt/cross/bin` as 
-`x86_64-elf-gcc` together with the binaries of the `binutils` we built in the
-previous step.
+This will actually build our cross compiler. It may take a few minutes to complete. If it complains about `port` not being found, you can install it by following the instructions [here](https://www.macports.org/install.php).
+
+The cross compiler's binary will be available at `~/opt/cross/bin` as 
+`x86_64-elf-gcc` together with the binaries of the `binutils` we built in the `cross_compiler_download` step.
 
 ### Running
 
