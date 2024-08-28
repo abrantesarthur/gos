@@ -10,13 +10,13 @@ Gos requires Make >= 3. Unfortunately, the bootloader doesn't support the MacBoo
 You need a cross-compiler to compile your kernel, since your system compiler 
 assumes you are writing code that will run on your hosted operating system.
 
-Thus, the first step is to download the cross compiler and its dependecies:
+Thus, the first step is to download the cross compiler and its dependecies. We use `sudo` so the script can create the necessary directories.
 
 ```shell
-make cross_compiler_download
+sudo make cross_compiler_download
 ```
 
-This will download a more recent version of [libiconv](https://www.gnu.org/software/libiconv/),
+This will take a few minutes to complete. It will download a more recent version of [libiconv](https://www.gnu.org/software/libiconv/),
 build [GNU binutils](https://wiki.osdev.org/Binutils) targeting our
 generic x86-64 architecture, and download `GCC-10.2.0`.
 

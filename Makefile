@@ -119,6 +119,7 @@ cross_compiler_download: binutils
 		tar -xf gcc-10.2.0.tar.xz; \
 	fi 
 	@echo gcc-10.2.0 extracted at $(BUILDS)
+	@echo Successfully installed libiconv, binutils and gcc!
 
 cross_compiler:
 	cd $(BUILD_GCC) && \
