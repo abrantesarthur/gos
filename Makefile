@@ -7,6 +7,8 @@ BUILD_GCC=$(BUILDS)/build-gcc
 BUILD_LIBICONV=$(BUILDS)/build-libiconv
 PREFIX=$(OPT)/cross
 
+GCC_SOURCE=$(PREFIX)/gcc
+
 # BINARIES
 BIN=$(PREFIX)/bin
 GCC=$(BIN)/x86_64-elf-gcc
@@ -17,9 +19,9 @@ LD=$(BIN)/x86_64-elf-ld
 #	BINUTILS
 ###############################################################################
 
-.PHONY: directories utils libiconv binutils cross_compiler
+.PHONY: directories utils libiconv binutils cross_compiler brew install_wget install_gmp install_mpfr install_mpc
 
-utils:
+install_brew:
 	@# install homebrew if it doesn't exist
 	@if ! [ -e /opt/homebrew/bin/brew ]; then \
 		echo "Installing homebrew at /opt/Homebrew" && \
@@ -28,12 +30,13 @@ utils:
 		echo; echo 'eval "$$(/opt/homebrew/bin/brew shellenv)"' >> $$HOME/.zprofile && \
 		eval "$$(/opt/homebrew/bin/brew shellenv)"; \
 	fi
+
+install_wget: install_brew
 	@if ! [ -e /opt/homebrew/bin/wget ]; then \
 		echo "Installing wget at /opt/homebrew/bin" && \
 		brew install wget; \
-	fi
-	
-
+	fi && \
+	source $$HOME/.zprofile
 
 directories:
 	@#make PREFIX directory where cross-compiler binary will be stored
@@ -57,7 +60,7 @@ directories:
 		mkdir $(BUILD_LIBICONV); \
 	fi
 
-libiconv: utils directories
+libiconv: install_wget directories
 	@# download libiconv file at BUILD_LIBICONV and build at /usr/local
 	@cd $(BUILDS) && \
 	if ! [ -f libiconv-1.16.tar.gz ]; then \
@@ -83,7 +86,7 @@ libiconv: utils directories
 
 
 binutils: libiconv
-	@# download binutils file at BUILD_BINUTILS and build at PREFIX
+	@# download binutils file at $(BUILD_BINUTILS) and build at $(PREFIX)
 	@cd $(BUILDS) && \
 	if ! [ -f binutils-2.35.tar.xz ]; then \
 		echo Downloading binutils-2.35.tar.xz && \
@@ -121,7 +124,11 @@ cross_compiler_download: binutils
 	@echo gcc-10.2.0 extracted at $(BUILDS)
 	@echo Successfully installed libiconv, binutils and gcc!
 
-cross_compiler:
+# You can install 'port' on https://www.macports.org/install.php
+gcc_deps:
+	sudo port install gmp mpfr libmpc
+
+cross_compiler: gcc_deps
 	cd $(BUILD_GCC) && \
 	echo Building gcc-10.2.0 at $(PREFIX) && \
 	export PATH=$(PREFIX)/bin:$$PATH && \
@@ -129,6 +136,7 @@ cross_compiler:
 		--target=$(TARGET) --prefix=$(PREFIX) \
 		--disable-nls --enable-languages=c,c++ \
 		--without-headers \
+		--with-gmp=/usr --with-mpc=/opt/local --with-mpfr=/opt/local \
 		--with-libiconv-prefix=/usr/local/Cellar  && \
 	make all-gcc && \
 	make all-target-libgcc && \
@@ -143,10 +151,17 @@ C_SOURCES = $(wildcard kernel/*.c drivers/*.c)
 HEADERS = $(wildcard kernel/*.h drivers/*.h)
 OBJ = ${C_SOURCES:.c=.o}
 
-.PHONY: os-image clean run-qemu run run-file
+.PHONY: os-image clean run-qemu run run-file install_nasm
 all: os-image run-qemu
 
-kernel/kernel_prefix.o: kernel/kernel_prefix.asm
+install_nasm: install_brew
+	@if ! [ -e /opt/homebrew/bin/nasm ]; then \
+		echo "Installing nasm at /opt/homebrew/bin" && \
+		brew install nasm; \
+	fi
+
+
+kernel/kernel_prefix.o: kernel/kernel_prefix.asm install_nasm
 	nasm -f elf64 $< -o $@
 
 %.o: %.c
@@ -155,7 +170,7 @@ kernel/kernel_prefix.o: kernel/kernel_prefix.asm
 kernel/kernel.bin: kernel/kernel_prefix.o ${OBJ} 
 	$(LD) -o $@ -Ttext 0x1000 $^ --oformat binary
 
-boot/boot_loader.bin: boot/boot_loader.asm
+boot/boot_loader.bin: boot/boot_loader.asm install_nasm
 	nasm -f bin $< -o $@
 
 os-image: boot/boot_loader.bin kernel/kernel.bin
@@ -172,6 +187,6 @@ run: boot/boot_loader.bin
 	qemu-system-x86_64 boot/boot_loader.bin
 
 .PHONY:
-run-file:
+run-file: nasm
 	nasm -f bin $(f).asm -o $(f).bin && \
 	qemu-system-x86_64 $(f).bin
