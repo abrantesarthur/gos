@@ -1,11 +1,14 @@
 TARGET=x86_64-elf
 SHELL=bash
+
 BUILDS=$$HOME/src
-OPT=$$HOME/opt
 BUILD_BINUTILS=$(BUILDS)/build-binutils
 GCC_SOURCE=$(BUILDS)/gcc-10.2.0
 BUILD_GCC=$(BUILDS)/build-gcc
 BUILD_LIBICONV=$(BUILDS)/build-libiconv
+
+
+OPT=$$HOME/opt
 PREFIX=$(OPT)/cross
 
 # BINARIES
@@ -18,12 +21,11 @@ LD=$(BIN)/x86_64-elf-ld
 #	BINUTILS
 ###############################################################################
 
-.PHONY: directories utils libiconv binutils cross_compiler brew install_wget install_gmp install_mpfr install_mpc
+.PHONY: directories utils libiconv binutils cross_compiler brew install_wget install_gmp install_mpfr install_mpc install_mac_ports
 
 install_brew:
-	@# install homebrew if it doesn't exist
 	@if ! [ -e /opt/homebrew/bin/brew ]; then \
-		echo "Installing homebrew at /opt/Homebrew" && \
+		echo Installing homebrew at /opt/Homebrew... && \
 		/bin/bash -c "$$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)" && \
 		echo adding homebrew to the PATH && \
 		echo; echo 'eval "$$(/opt/homebrew/bin/brew shellenv)"' >> $$HOME/.zprofile && \
@@ -34,19 +36,15 @@ install_wget: install_brew
 	@if ! [ -e /opt/homebrew/bin/wget ]; then \
 		echo "Installing wget at /opt/homebrew/bin" && \
 		brew install wget; \
-	fi && \
-	source $$HOME/.zprofile
+	fi
 
 install_gnu_sed: install_brew
 	@if ! [ -d /opt/homebrew/Cellar/gnu-sed ]; then \
 		echo "Installing gnu-sed at /opt/homebrew/bin" && \
 		brew install gnu-sed; \
-	fi && \
-	source $$HOME/.zprofile
-
+	fi
 
 directories:
-	@#make PREFIX directory where cross-compiler binary will be stored
 	@if ! [ -d $(OPT) ]; then \
 		mkdir $(OPT); \
 	fi
@@ -71,8 +69,7 @@ libiconv: install_wget directories
 	@# download libiconv file at BUILD_LIBICONV and build at /usr/local
 	@cd $(BUILDS) && \
 	if ! [ -f libiconv-1.16.tar.gz ]; then \
-		echo Downloading libiconv-1.16.tar.gz && \
-		wget https://ftp.gnu.org/gnu/libiconv/libiconv-1.16.tar.gz; \
+		wget -q --show-progress https://ftp.gnu.org/gnu/libiconv/libiconv-1.16.tar.gz; \
 	fi && \
 	echo libiconv-1.16.tar.gz downloaded at $(BUILDS) && \
 	if ! [ -d libiconv-1.16 ]; then \
@@ -96,8 +93,7 @@ binutils: libiconv
 	@# download binutils file at $(BUILD_BINUTILS) and build at $(PREFIX)
 	@cd $(BUILDS) && \
 	if ! [ -f binutils-2.35.tar.xz ]; then \
-		echo Downloading binutils-2.35.tar.xz && \
-		wget https://ftp.gnu.org/gnu/binutils/binutils-2.35.tar.xz; \
+		wget -q --show-progress https://ftp.gnu.org/gnu/binutils/binutils-2.35.tar.xz; \
 	fi && \
 	echo binutils-2.35.tar.xz downloaded at $(BUILDS) && \
 	if ! [ -d "binutils-2.35" ]; then \
@@ -117,11 +113,12 @@ binutils: libiconv
 		echo Binutils built at $(PREFIX); \
 	fi
 
-cross_compiler_download: binutils
+# download the cross-compiler sources.
+download_cc_sources: binutils
 	@cd $(BUILDS) && \
 	if ! [ -f "gcc-10.2.0.tar.xz" ]; then \
-		echo Downloading gcc-10.2.tar.xz && \
-		wget https://ftp.gnu.org/gnu/gcc/gcc-10.2.0/gcc-10.2.0.tar.xz; \
+		echo Downloading gcc-10.2.0.tar.xz... && \
+		wget -q --show-progress https://ftp.gnu.org/gnu/gcc/gcc-10.2.0/gcc-10.2.0.tar.xz; \
 	fi && \
 	echo gcc-10.2.tar.xz downloaded at $(BUILDS) && \
 	if ! [ -d gcc-10.2.0 ]; then \
@@ -131,8 +128,25 @@ cross_compiler_download: binutils
 	@echo gcc-10.2.0 extracted at $(BUILDS)
 	@echo Successfully installed libiconv, binutils and gcc!
 
-# You can install 'port' on https://www.macports.org/install.php
-gcc_deps:
+# Install MacPorts, an open source system for installing open-source libraries on Mac.
+install_mac_ports:
+	@cd $(BUILDS) && \
+	if ! [ -f "MacPorts-2.10.1.tar.gz" ]; then \
+		echo Downloading Macports... && \
+		wget -q --show-progress https://github.com/macports/macports-base/releases/download/v2.10.1/MacPorts-2.10.1.tar.gz; \
+	fi && \
+	echo MacPorts downloaded at $(BUILDS) && \
+	if ! [ -d MacPorts-2.10.1 ]; then \
+		echo extracting MacPorts... && \
+		tar -xf MacPorts-2.10.1.tar.gz; \
+	fi && \
+	cd MacPorts-2.10.1 && \
+	./configure && make && sudo make install && \
+	cd .. && rm -rf MacPorts-2.10.1*
+
+# Use MacPorts to install thegmp, mpfr and libmpc, open-source
+# packages that the cross compiler depends on.
+install_cc_deps: install_mac_ports
 	sudo port install gmp mpfr libmpc
 
 # Build a libgcc multilib variant without red-zone requirement
@@ -151,7 +165,8 @@ disable_red_zone: install_gnu_sed
 	gsed -i '/x86_64-\*-elf/a\	tmake_file="$${tmake_file} i386/t-x86_64-elf"' $(GCC_CONFIG); \
 	
 
-cross_compiler: cross_compiler_download gcc_deps disable_red_zone
+# Build 
+cross_compiler: download_cc_sources install_cc_deps disable_red_zone
 	cd $(BUILD_GCC) && \
 	echo Building gcc-10.2.0 at $(PREFIX) && \
 	export PATH=$(PREFIX)/bin:$$PATH && \
