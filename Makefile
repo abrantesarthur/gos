@@ -140,14 +140,25 @@ install_mac_ports:
 		echo extracting MacPorts... && \
 		tar -xf MacPorts-2.10.1.tar.gz; \
 	fi && \
-	cd MacPorts-2.10.1 && \
-	./configure && make && sudo make install && \
-	cd .. && rm -rf MacPorts-2.10.1*
+	if ! [ -f /opt/local/bin/port ]; then \
+		echo installling MacPorts... && \
+		cd MacPorts-2.10.1 && \
+		./configure && make && sudo make install && \
+		cd .. && rm -rf MacPorts-2.10.1; \
+	fi
 
 # Use MacPorts to install thegmp, mpfr and libmpc, open-source
 # packages that the cross compiler depends on.
 install_cc_deps: install_mac_ports
-	sudo port install gmp mpfr libmpc
+	@if port installed gmp | grep -q "None"; then \
+		sudo port -q install gmp; \
+	fi && \
+	if port installed mpfr | grep -q "None"; then \
+		sudo port -q install mpfr; \
+	fi && \
+	if port installed libmpc | grep -q "None"; then \
+		sudo port -q install libmpc; \
+	fi
 
 # Build a libgcc multilib variant without red-zone requirement
 GCC_CONFIG=$(GCC_SOURCE)/gcc/config.gcc
@@ -155,17 +166,16 @@ T_X86_64_ELF=$(GCC_SOURCE)/gcc/config/i386/t-x86_64-elf
 MULTILIB_CONFIG=
 disable_red_zone: install_gnu_sed
 	@if ! [ -f $(T_X86_64_ELF) ]; then \
-		echo Creating && \
 		sudo chown -R $(USER):admin $(BUILDS)/gcc-10.2.0 && \
 		touch $(T_X86_64_ELF); \
 	fi
 	truncate -s 0 $(T_X86_64_ELF) && \
 	echo MULTILIB_OPTIONS += mno-red-zone >> $(T_X86_64_ELF); \
 	echo MULTILIB_DIRNAMES += no-red-zone >> $(T_X86_64_ELF); \
-	gsed -i '/x86_64-\*-elf/a\	tmake_file="$${tmake_file} i386/t-x86_64-elf"' $(GCC_CONFIG); \
+	gsed -i '/x86_64-\*-elf/a\	tmake_file="$${tmake_file} i386/t-x86_64-elf"' $(GCC_CONFIG)
 	
 
-# Build 
+# Build cross-compiler
 cross_compiler: download_cc_sources install_cc_deps disable_red_zone
 	cd $(BUILD_GCC) && \
 	echo Building gcc-10.2.0 at $(PREFIX) && \
