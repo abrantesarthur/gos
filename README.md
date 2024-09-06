@@ -3,7 +3,7 @@ I wanted to understand how an OS gets loaded into memory at boot time so I wrote
 
 ## Development
 
-Gos requires Make >= 3. Unfortunately, the bootloader doesn't support the MacBook M1 architecture yet.
+Gos requires Make >= 3.
 
 ### Setting Up
 

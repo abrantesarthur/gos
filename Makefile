@@ -193,7 +193,7 @@ cross_compiler: download_cc_sources install_cc_deps disable_red_zone disable_pch
 		--without-headers \
 		--with-gmp=/usr --with-mpc=/opt/local --with-mpfr=/opt/local \
 		--with-libiconv-prefix=/usr/local/Cellar  && \
-	make all-gcc && \
+	make -j 8 all-gcc && \
 	make all-target-libgcc && \
 	make install-gcc && \
 	make install-target-libgcc;
