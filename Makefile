@@ -21,7 +21,7 @@ LD=$(BIN)/x86_64-elf-ld
 #	BINUTILS
 ###############################################################################
 
-.PHONY: directories utils libiconv binutils cross_compiler brew install_wget install_gmp install_mpfr install_mpc install_mac_ports
+.PHONY: directories utils libiconv binutils cross_compiler brew install_wget install_gmp install_mpfr install_mpc install_mac_ports disable_pch
 
 install_brew:
 	@if ! [ -e /opt/homebrew/bin/brew ]; then \
@@ -162,6 +162,7 @@ install_cc_deps: install_mac_ports
 
 # Build a libgcc multilib variant without red-zone requirement
 GCC_CONFIG=$(GCC_SOURCE)/gcc/config.gcc
+HOST_CONFIG=$(GCC_SOURCE)/gcc/config.host
 T_X86_64_ELF=$(GCC_SOURCE)/gcc/config/i386/t-x86_64-elf
 disable_red_zone: install_gnu_sed
 	@if ! [ -f $(T_X86_64_ELF) ]; then \
@@ -172,10 +173,17 @@ disable_red_zone: install_gnu_sed
 	echo MULTILIB_OPTIONS += mno-red-zone >> $(T_X86_64_ELF); \
 	echo MULTILIB_DIRNAMES += no-red-zone >> $(T_X86_64_ELF); \
 	gsed -i '/x86_64-\*-elf/a\	tmake_file="$${tmake_file} i386/t-x86_64-elf"' $(GCC_CONFIG)
+
+# Disable PCH so the MacBook M architecture can be supported
+disable_pch: install_gnu_sed
+	gsed -i '/out_host_hook_obj=host-darwin.o/c\		#out_host_hook_obj=host-darwin.o' $(HOST_CONFIG); \
+	gsed -i '/host_xmake_file="$${host_xmake_file} x-darwin"/c\		#host_xmake_file="$${host_xmake_file} x-darwin"' $(HOST_CONFIG)
+	
+
 	
 
 # Build cross-compiler
-cross_compiler: download_cc_sources install_cc_deps disable_red_zone
+cross_compiler: download_cc_sources install_cc_deps disable_red_zone disable_pch
 	cd $(BUILD_GCC) && \
 	echo Building gcc-10.2.0 at $(PREFIX) && \
 	export PATH=$(PREFIX)/bin:$$PATH && \
