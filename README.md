@@ -10,16 +10,15 @@ Gos requires Make >= 3.
 You need a cross-compiler to compile your kernel, since your system compiler 
 assumes you are writing code that will run on your hosted operating system. 
 
-To actually build it, run:
+To build it, run:
 
 ```shell
 make cross_compiler
 ```
 
-It may take a few minutes to complete.
+This builds a cross compiler targeting an x86-64 architecture. It may take a few minutes to complete.
 
-The cross compiler's binary will be available at `~/opt/cross/bin` as 
-`x86_64-elf-gcc` together with the binaries of the `binutils` we built in the `cross_compiler_download` step.
+The cross compiler's binary will be available at `~/opt/cross/bin` as `x86_64-elf-gcc`.
 
 ### Running
 
