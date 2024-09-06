@@ -163,7 +163,6 @@ install_cc_deps: install_mac_ports
 # Build a libgcc multilib variant without red-zone requirement
 GCC_CONFIG=$(GCC_SOURCE)/gcc/config.gcc
 T_X86_64_ELF=$(GCC_SOURCE)/gcc/config/i386/t-x86_64-elf
-MULTILIB_CONFIG=
 disable_red_zone: install_gnu_sed
 	@if ! [ -f $(T_X86_64_ELF) ]; then \
 		sudo chown -R $(USER):admin $(BUILDS)/gcc-10.2.0 && \
