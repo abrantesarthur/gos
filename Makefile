@@ -19,12 +19,12 @@ PREFIX=$(OPT)/cross
 
 # BINARIES
 BIN=$(PREFIX)/bin
-GCC=$(BIN)/x86_64-elf-gcc
+GCC=$(BIN)/x86_64-elf-gcc-$(GCC_VERSION)
 LD=$(BIN)/x86_64-elf-ld
 
 
 ###############################################################################
-#	BINUTILS
+# CROSS COMPILER DEPENDENCIES
 ###############################################################################
 
 .PHONY: directories utils libiconv binutils cross_compiler brew install_wget install_gmp install_mpfr install_mpc install_mac_ports disable_pch
@@ -190,7 +190,11 @@ disable_pch: install_gnu_sed
 	gsed -i '/host_xmake_file="$${host_xmake_file} x-darwin"/c\		#host_xmake_file="$${host_xmake_file} x-darwin"' $(HOST_CONFIG)
 	
 
-# Build cross-compiler
+###############################################################################
+# CROSS COMPILER
+###############################################################################
+
+# Build cross-compiler. If it fails, consider running make clean_sources before.
 cross_compiler: download_cc_sources install_cc_deps disable_red_zone disable_pch
 	cd $(BUILD_GCC) && \
 	echo Building gcc-$(GCC_VERSION) at $(PREFIX) && \
