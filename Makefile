@@ -44,6 +44,9 @@ install_wget: install_brew
 		brew install wget; \
 	fi
 
+install_texinfo: install_brew
+	@brew install texinfo
+
 install_gnu_sed: install_brew
 	@if ! [ -d /opt/homebrew/Cellar/gnu-sed ]; then \
 		echo "Installing gnu-sed at /opt/homebrew/bin" && \
@@ -95,7 +98,7 @@ libiconv: install_wget directories
 	fi
 
 
-binutils: libiconv
+binutils: libiconv install_texinfo
 	@# download binutils file at $(BUILD_BINUTILS) and build at $(PREFIX)
 	@cd $(BUILDS) && \
 	if ! [ -f binutils-$(BINUTILS_VERSION).tar.xz ]; then \
