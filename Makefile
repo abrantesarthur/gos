@@ -201,11 +201,11 @@ cross_compiler: download_cc_sources install_cc_deps disable_red_zone disable_pch
 		--without-headers \
 		--with-gmp=/usr --with-mpc=/opt/local --with-mpfr=/opt/local \
 		--with-libiconv-prefix=/usr/local/Cellar  && \
-	# sudo make -j 8 all-gcc && \
+	sudo make -j 8 all-gcc && \
 	sudo make all-target-libgcc && \
 	sudo make install-gcc && \
 	sudo make install-target-libgcc;
-	
+
 ###############################################################################
 # CLEAN
 ###############################################################################
