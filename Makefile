@@ -1,9 +1,13 @@
 TARGET=x86_64-elf
 SHELL=bash
 
+GCC_VERSION=14.2.0
+LIBICONV_VERSION=1.17
+BINUTILS_VERSION=2.43
+
 BUILDS=$$HOME/src
 BUILD_BINUTILS=$(BUILDS)/build-binutils
-GCC_SOURCE=$(BUILDS)/gcc-10.2.0
+GCC_SOURCE=$(BUILDS)/gcc-$(GCC_VERSION)
 BUILD_GCC=$(BUILDS)/build-gcc
 BUILD_LIBICONV=$(BUILDS)/build-libiconv
 
@@ -68,19 +72,19 @@ directories:
 libiconv: install_wget directories
 	@# download libiconv file at BUILD_LIBICONV and build at /usr/local
 	@cd $(BUILDS) && \
-	if ! [ -f libiconv-1.16.tar.gz ]; then \
-		wget -q --show-progress https://ftp.gnu.org/gnu/libiconv/libiconv-1.16.tar.gz; \
+	if ! [ -f libiconv-$(LIBICONV_VERSION).tar.gz ]; then \
+		wget -q --show-progress https://ftp.gnu.org/gnu/libiconv/libiconv-$(LIBICONV_VERSION).tar.gz; \
 	fi && \
-	echo libiconv-1.16.tar.gz downloaded at $(BUILDS) && \
-	if ! [ -d libiconv-1.16 ]; then \
-		echo extracting libiconv-1.16.tar.gz && \
-		tar -xf libiconv-1.16.tar.gz; \
+	echo libiconv-$(LIBICONV_VERSION).tar.gz downloaded at $(BUILDS) && \
+	if ! [ -d libiconv-$(LIBICONV_VERSION) ]; then \
+		echo extracting libiconv-$(LIBICONV_VERSION).tar.gz && \
+		tar -xf libiconv-$(LIBICONV_VERSION).tar.gz; \
 	fi && \
-	echo libiconv-1.16 extracted at $(BUILDS) && \
+	echo libiconv-$(LIBICONV_VERSION) extracted at $(BUILDS) && \
 	if ! [ -d /usr/local/Cellar/libiconv ]; then \
 		echo building libiconv at /usr/local/Cellar && \
 		cd $(BUILD_LIBICONV) && \
-		../libiconv-1.16/configure --prefix=/usr/local/Cellar/libiconv/1.16 && \
+		../libiconv-$(LIBICONV_VERSION)/configure --prefix=/usr/local/Cellar/libiconv/$(LIBICONV_VERSION) && \
 		make && \
 		make install; \
 	fi && \
@@ -92,19 +96,19 @@ libiconv: install_wget directories
 binutils: libiconv
 	@# download binutils file at $(BUILD_BINUTILS) and build at $(PREFIX)
 	@cd $(BUILDS) && \
-	if ! [ -f binutils-2.35.tar.xz ]; then \
-		wget -q --show-progress https://ftp.gnu.org/gnu/binutils/binutils-2.35.tar.xz; \
+	if ! [ -f binutils-$(BINUTILS_VERSION).tar.xz ]; then \
+		wget -q --show-progress https://ftp.gnu.org/gnu/binutils/binutils-$(BINUTILS_VERSION).tar.xz; \
 	fi && \
-	echo binutils-2.35.tar.xz downloaded at $(BUILDS) && \
-	if ! [ -d "binutils-2.35" ]; then \
-		echo Extracting binutils-2.35.tar.xz && \
-		tar -xf binutils-2.35.tar.xz; \
+	echo binutils-$(BINUTILS_VERSION).tar.xz downloaded at $(BUILDS) && \
+	if ! [ -d "binutils-$(BINUTILS_VERSION)" ]; then \
+		echo Extracting binutils-$(BINUTILS_VERSION).tar.xz && \
+		tar -xf binutils-$(BINUTILS_VERSION).tar.xz; \
 	fi && \
-	echo binutils-2.35 extracted at $(BUILDS) && \
+	echo binutils-$(BINUTILS_VERSION) extracted at $(BUILDS) && \
 	if ! [ -d $(PREFIX)/bin ] || ! [ -d $(PREFIX)/$(TARGET) ] || ! [ -d $(PREFIX)/share ]; then \
-		echo building binutils-2.35 at $(PREFIX) && \
+		echo building binutils-$(BINUTILS_VERSION) at $(PREFIX) && \
 		cd $(BUILD_BINUTILS) && \
-		../binutils-2.35/configure \
+		../binutils-$(BINUTILS_VERSION)/configure \
 			--target=$(TARGET) --prefix=$(PREFIX) \
 			--with-sysroot --disable-nls --disable-werror && \
 		make && make install; \
@@ -116,16 +120,16 @@ binutils: libiconv
 # download the cross-compiler sources.
 download_cc_sources: binutils
 	@cd $(BUILDS) && \
-	if ! [ -f "gcc-10.2.0.tar.xz" ]; then \
-		echo Downloading gcc-10.2.0.tar.xz... && \
-		wget -q --show-progress https://ftp.gnu.org/gnu/gcc/gcc-10.2.0/gcc-10.2.0.tar.xz; \
+	if ! [ -f "gcc-$(GCC_VERSION).tar.xz" ]; then \
+		echo Downloading gcc-$(GCC_VERSION).tar.xz... && \
+		wget -q --show-progress https://ftp.gnu.org/gnu/gcc/gcc-$(GCC_VERSION)/gcc-$(GCC_VERSION).tar.xz; \
 	fi && \
-	echo gcc-10.2.tar.xz downloaded at $(BUILDS) && \
-	if ! [ -d gcc-10.2.0 ]; then \
-		echo Extracting gcc-10.2.0.tar.xz && \
-		tar -xf gcc-10.2.0.tar.xz; \
+	echo gcc-$(GCC_VERSION).tar.xz downloaded at $(BUILDS) && \
+	if ! [ -d gcc-$(GCC_VERSION) ]; then \
+		echo Extracting gcc-$(GCC_VERSION).tar.xz && \
+		tar -xf gcc-$(GCC_VERSION).tar.xz; \
 	fi 
-	@echo gcc-10.2.0 extracted at $(BUILDS)
+	@echo gcc-$(GCC_VERSION) extracted at $(BUILDS)
 	@echo Successfully installed libiconv, binutils and gcc!
 
 # Install MacPorts, an open source system for installing open-source libraries on Mac.
@@ -166,7 +170,7 @@ HOST_CONFIG=$(GCC_SOURCE)/gcc/config.host
 T_X86_64_ELF=$(GCC_SOURCE)/gcc/config/i386/t-x86_64-elf
 disable_red_zone: install_gnu_sed
 	@if ! [ -f $(T_X86_64_ELF) ]; then \
-		sudo chown -R $(USER):admin $(BUILDS)/gcc-10.2.0 && \
+		sudo chown -R $(USER):admin $(BUILDS)/gcc-$(GCC_VERSION) && \
 		touch $(T_X86_64_ELF); \
 	fi
 	truncate -s 0 $(T_X86_64_ELF) && \
@@ -180,14 +184,12 @@ disable_pch: install_gnu_sed
 	gsed -i '/host_xmake_file="$${host_xmake_file} x-darwin"/c\		#host_xmake_file="$${host_xmake_file} x-darwin"' $(HOST_CONFIG)
 	
 
-	
-
 # Build cross-compiler
 cross_compiler: download_cc_sources install_cc_deps disable_red_zone disable_pch
 	cd $(BUILD_GCC) && \
-	echo Building gcc-10.2.0 at $(PREFIX) && \
+	echo Building gcc-$(GCC_VERSION) at $(PREFIX) && \
 	export PATH=$(PREFIX)/bin:$$PATH && \
-	../gcc-10.2.0/configure \
+	../gcc-$(GCC_VERSION)/configure \
 		--target=$(TARGET) --prefix=$(PREFIX) \
 		--disable-nls --enable-languages=c,c++ \
 		--without-headers \
