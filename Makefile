@@ -74,7 +74,7 @@ directories:
 		mkdir $(BUILD_LIBICONV); \
 	fi
 
-libiconv: install_wget directories
+install_libiconv: install_wget directories
 	@# download libiconv file at BUILD_LIBICONV and build at /usr/local
 	@cd $(BUILDS) && \
 	if ! [ -f libiconv-$(LIBICONV_VERSION).tar.gz ]; then \
@@ -98,7 +98,7 @@ libiconv: install_wget directories
 	fi
 
 
-binutils: libiconv install_texinfo
+install_binutils: install_libiconv install_texinfo
 	@# download binutils file at $(BUILD_BINUTILS) and build at $(PREFIX)
 	@cd $(BUILDS) && \
 	if ! [ -f binutils-$(BINUTILS_VERSION).tar.xz ]; then \
@@ -124,7 +124,7 @@ binutils: libiconv install_texinfo
 	fi
 
 # download the cross-compiler sources.
-download_cc_sources: binutils
+download_cc_sources: install_binutils
 	@cd $(BUILDS) && \
 	if ! [ -f "gcc-$(GCC_VERSION).tar.xz" ]; then \
 		echo Downloading gcc-$(GCC_VERSION).tar.xz... && \
@@ -136,7 +136,7 @@ download_cc_sources: binutils
 		tar -xf gcc-$(GCC_VERSION).tar.xz; \
 	fi 
 	@echo gcc-$(GCC_VERSION) extracted at $(BUILDS)
-	@echo Successfully installed libiconv, binutils and gcc!
+	@echo Successfully installed libiconv-$(LIBICONV_VERSION), binutils-$(BINUTILS_VERSION), and downloaded gcc-$(GCC_VERSION)!
 
 # Install MacPorts, an open source system for installing open-source libraries on Mac.
 install_mac_ports:
@@ -195,16 +195,17 @@ cross_compiler: download_cc_sources install_cc_deps disable_red_zone disable_pch
 	cd $(BUILD_GCC) && \
 	echo Building gcc-$(GCC_VERSION) at $(PREFIX) && \
 	export PATH=$(PREFIX)/bin:$$PATH && \
-	../gcc-$(GCC_VERSION)/configure \
+	sudo ../gcc-$(GCC_VERSION)/configure \
 		--target=$(TARGET) --prefix=$(PREFIX) \
 		--disable-nls --enable-languages=c,c++ \
 		--without-headers \
 		--with-gmp=/usr --with-mpc=/opt/local --with-mpfr=/opt/local \
 		--with-libiconv-prefix=/usr/local/Cellar  && \
-	make -j 8 all-gcc && \
-	make all-target-libgcc && \
-	make install-gcc && \
-	make install-target-libgcc;
+	# sudo make -j 8 all-gcc && \
+	sudo make all-target-libgcc && \
+	sudo make install-gcc && \
+	sudo make install-target-libgcc;
+	
 ###############################################################################
 # CLEAN
 ###############################################################################
