@@ -11,6 +11,8 @@ GCC_SOURCE=$(BUILDS)/gcc-$(GCC_VERSION)
 BUILD_GCC=$(BUILDS)/build-gcc
 BUILD_LIBICONV=$(BUILDS)/build-libiconv
 
+LIBICONV_PREFIX=/usr/local/Cellar/libiconv/$(LIBICONV_VERSION)
+
 
 OPT=$$HOME/opt
 PREFIX=$(OPT)/cross
@@ -84,12 +86,12 @@ libiconv: install_wget directories
 	if ! [ -d /usr/local/Cellar/libiconv/$(LIBICONV_VERSION) ]; then \
 		echo building libiconv at /usr/local/Cellar && \
 		cd $(BUILD_LIBICONV) && \
-		sudo ../libiconv-$(LIBICONV_VERSION)/configure --prefix=/usr/local/Cellar/libiconv/$(LIBICONV_VERSION) && \
+		sudo ../libiconv-$(LIBICONV_VERSION)/configure --prefix=$(LIBICONV_PREFIX) && \
 		sudo make && \
 		sudo make install; \
 	fi && \
 	if [ -d /usr/local/Cellar/libiconv/$(LIBICONV_VERSION) ]; then \
-		echo libiconv built at /usr/local/Cellar; \
+		echo libiconv-$(LIBICONV_VERSION) built at $(LIBICONV_PREFIX); \
 	fi
 
 
@@ -204,7 +206,7 @@ cross_compiler: download_cc_sources install_cc_deps disable_red_zone disable_pch
 ###############################################################################
 
 clean_sources:
-	rm -rf $(BUILDS)
+	sudo rm -rf $(BUILDS) && sudo rm -rf $(LIBICONV_PREFIX) 
 
 ###############################################################################
 # RUN KERNEL
