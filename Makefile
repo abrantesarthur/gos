@@ -110,10 +110,11 @@ binutils: libiconv
 	if ! [ -d $(PREFIX)/bin ] || ! [ -d $(PREFIX)/$(TARGET) ] || ! [ -d $(PREFIX)/share ]; then \
 		echo building binutils-$(BINUTILS_VERSION) at $(PREFIX) && \
 		cd $(BUILD_BINUTILS) && \
-		../binutils-$(BINUTILS_VERSION)/configure \
+		sudo ../binutils-$(BINUTILS_VERSION)/configure \
 			--target=$(TARGET) --prefix=$(PREFIX) \
 			--with-sysroot --disable-nls --disable-werror && \
-		make && make install; \
+		sudo make && \
+		sudo make install; \
 	fi
 	@if [ -d $(PREFIX)/$(TARGET) ] && [ -d $(PREFIX)/$(TARGET) ] && [ -d $(PREFIX)/share ]; then \
 		echo Binutils built at $(PREFIX); \
