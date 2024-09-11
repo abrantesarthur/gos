@@ -211,7 +211,7 @@ cross_compiler: download_cc_sources install_cc_deps disable_red_zone disable_pch
 ###############################################################################
 
 clean_sources:
-	sudo rm -rf $(BUILDS) && rm -rf $(OPT) && sudo rm -rf $(LIBICONV_PREFIX) 
+	sudo rm -rf $(BUILDS) && sudo rm -rf $(OPT) && sudo rm -rf $(LIBICONV_PREFIX) 
 
 ###############################################################################
 # RUN KERNEL
