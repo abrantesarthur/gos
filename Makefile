@@ -199,6 +199,12 @@ cross_compiler: download_cc_sources install_cc_deps disable_red_zone disable_pch
 	make all-target-libgcc && \
 	make install-gcc && \
 	make install-target-libgcc;
+###############################################################################
+# CLEAN
+###############################################################################
+
+clean_sources:
+	rm -rf $(BUILDS)
 
 ###############################################################################
 # RUN KERNEL
