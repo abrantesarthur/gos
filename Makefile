@@ -194,7 +194,7 @@ disable_pch: install_gnu_sed
 # CROSS COMPILER
 ###############################################################################
 
-# Build cross-compiler. If it fails, consider running make clean_sources before.
+# Build cross-compiler. If it fails, consider running make clean_cc before.
 cross_compiler: download_cc_sources install_cc_deps disable_red_zone disable_pch
 	cd $(BUILD_GCC) && \
 	echo Building gcc-$(GCC_VERSION) at $(PREFIX) && \
@@ -214,7 +214,7 @@ cross_compiler: download_cc_sources install_cc_deps disable_red_zone disable_pch
 # CLEAN
 ###############################################################################
 
-clean_sources:
+clean_cc:
 	sudo rm -rf $(BUILDS) && sudo rm -rf $(OPT) && sudo rm -rf $(LIBICONV_PREFIX) 
 
 ###############################################################################

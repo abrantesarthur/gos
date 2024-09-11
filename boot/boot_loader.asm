@@ -53,7 +53,7 @@ load_disk:
     mov dl, 0x80	    ; from first floppy disk
     mov dh, 0           ; select track on 1st side of floppy disk
     mov ch, 0           ; cylinder
-    mov cl, 2           ; start reading from second sector (i.e. after boot se
+    mov cl, 2           ; start reading from second sector. That is, after boot sector
 
     int 0x13            ; issue read
 
