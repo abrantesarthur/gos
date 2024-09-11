@@ -81,14 +81,14 @@ libiconv: install_wget directories
 		tar -xf libiconv-$(LIBICONV_VERSION).tar.gz; \
 	fi && \
 	echo libiconv-$(LIBICONV_VERSION) extracted at $(BUILDS) && \
-	if ! [ -d /usr/local/Cellar/libiconv ]; then \
+	if ! [ -d /usr/local/Cellar/libiconv/$(LIBICONV_VERSION) ]; then \
 		echo building libiconv at /usr/local/Cellar && \
 		cd $(BUILD_LIBICONV) && \
-		../libiconv-$(LIBICONV_VERSION)/configure --prefix=/usr/local/Cellar/libiconv/$(LIBICONV_VERSION) && \
-		make && \
-		make install; \
+		sudo ../libiconv-$(LIBICONV_VERSION)/configure --prefix=/usr/local/Cellar/libiconv/$(LIBICONV_VERSION) && \
+		sudo make && \
+		sudo make install; \
 	fi && \
-	if [ -d /usr/local/Cellar/libiconv ]; then \
+	if [ -d /usr/local/Cellar/libiconv/$(LIBICONV_VERSION) ]; then \
 		echo libiconv built at /usr/local/Cellar; \
 	fi
 
