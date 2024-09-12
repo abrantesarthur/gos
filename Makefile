@@ -13,7 +13,7 @@ BUILD_LIBICONV=$(BUILDS)/build-libiconv
 
 LIBICONV_PREFIX=/usr/local/Cellar/libiconv/$(LIBICONV_VERSION)
 
-
+ 
 OPT=$$HOME/opt
 PREFIX=$(OPT)/cross
 
@@ -176,7 +176,7 @@ HOST_CONFIG=$(GCC_SOURCE)/gcc/config.host
 T_X86_64_ELF=$(GCC_SOURCE)/gcc/config/i386/t-x86_64-elf
 disable_red_zone: install_gnu_sed
 	@if ! [ -f $(T_X86_64_ELF) ]; then \
-		sudo chown -R $(USER):admin $(BUILDS)/gcc-$(GCC_VERSION) && \
+		sudo chown -R $(USER):admin $(GCC_SOURCE) && \
 		touch $(T_X86_64_ELF); \
 	fi
 	truncate -s 0 $(T_X86_64_ELF) && \
