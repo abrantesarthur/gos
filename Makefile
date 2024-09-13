@@ -1,9 +1,6 @@
 # BINARIES
-GCC_VERSION=14.2.0
-OPT=$$HOME/opt
-PREFIX=$(OPT)/cross
-BIN=$(PREFIX)/bin
-GCC=$(BIN)/x86_64-elf-gcc-$(GCC_VERSION)
+BIN=$$HOME/opt/cross/bin
+GCC=$(BIN)/x86_64-elf-gcc
 LD=$(BIN)/x86_64-elf-ld
 
 
@@ -17,6 +14,7 @@ all: os-image run-qemu
 kernel/kernel_prefix.o: kernel/kernel_prefix.asm 
 	nasm -f elf64 $< -o $@
 
+# compile c files into object files in an environment without a standard library
 %.o: %.c
 	$(GCC) -ffreestanding -c $< -o $@
 
