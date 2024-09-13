@@ -2,6 +2,7 @@
 BIN=$$HOME/opt/cross/bin
 GCC=$(BIN)/x86_64-elf-gcc
 LD=$(BIN)/x86_64-elf-ld
+QEMU=qemu-system-x86_64
 
 
 C_SOURCES = $(wildcard kernel/*.c drivers/*.c)
@@ -31,13 +32,25 @@ clean: ${wildcard *.o *.bin}
 	rm kernel/*.o drivers/*.o kernel/*.bin drivers/*.bin boot/*.bin os-image
 
 run-qemu: os-image
-	qemu-system-x86_64 -machine pc os-image
+	$(QEMU) -machine pc os-image
 
 .PHONY: 
 run: boot/boot_loader.bin 
-	qemu-system-x86_64 boot/boot_loader.bin
+	$(QEMU) boot/boot_loader.bin
 
+# run binary file on qemu
 .PHONY:
-run-file: nasm
+run-file:
+	$(eval f := $(filter-out $@,$(MAKECMDGOALS)))
 	nasm -f bin $(f).asm -o $(f).bin && \
-	qemu-system-x86_64 $(f).bin
+	$(QEMU) $(f).bin
+
+# print binary file as hex
+.PHONY:
+dump-bin:
+	$(eval f := $(filter-out $@,$(MAKECMDGOALS)))
+	od -t x1 -A n $(f)
+
+# catch all rule: prevent errors when arguments don't match anything
+%:
+	@:
