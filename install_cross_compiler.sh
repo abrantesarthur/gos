@@ -18,7 +18,6 @@ LIBICONV_PREFIX=/usr/local/Cellar/libiconv/$LIBICONV_VERSION
 OPT=$HOME/opt
 PREFIX=$OPT/cross
 
-# Function to install Homebrew
 install_brew() {
     if [ ! -e /opt/homebrew/bin/brew ]; then
         echo "Installing homebrew at /opt/Homebrew..."
@@ -29,7 +28,6 @@ install_brew() {
     fi
 }
 
-# Function to install wget
 install_wget() {
     if ! brew list | grep -q wget; then
         echo "Installing wget at /opt/homebrew/bin"
@@ -37,7 +35,6 @@ install_wget() {
     fi
 }
 
-# Function to install texinfo
 install_texinfo() {
     if ! brew list | grep -q texinfo; then
         echo "Installing texinfo at /opt/homebrew/bin"
@@ -45,7 +42,6 @@ install_texinfo() {
     fi
 }
 
-# Function to install gnu-sed
 install_gnu_sed() {
     if ! brew list | grep -q gnu-sed; then
         echo "Installing gnu-sed at /opt/homebrew/bin"
@@ -58,7 +54,6 @@ create_directories() {
     mkdir -p $OPT $PREFIX $BUILDS $BUILD_BINUTILS $BUILD_GCC $BUILD_LIBICONV
 }
 
-# Function to install libiconv
 install_libiconv() {
     install_wget
     create_directories
@@ -84,7 +79,6 @@ install_libiconv() {
     fi
 }
 
-# Function to install binutils
 install_binutils() {
     install_libiconv
     install_texinfo
@@ -129,7 +123,6 @@ download_cc_sources() {
     echo "Successfully installed libiconv-$LIBICONV_VERSION, binutils-$BINUTILS_VERSION, and downloaded gcc-$GCC_VERSION!"
 }
 
-# Function to install MacPorts
 install_mac_ports() {
     cd $BUILDS
     if [ ! -f "MacPorts-2.10.1.tar.gz" ]; then
@@ -149,7 +142,6 @@ install_mac_ports() {
     fi
 }
 
-# Function to install cross-compiler dependencies
 install_cc_deps() {
     install_mac_ports
     if port installed gmp | grep -q "None"; then
@@ -204,7 +196,6 @@ build_cross_compiler() {
     sudo make install-target-libgcc
 }
 
-# Function to install nasm
 install_nasm() {
     if ! brew list | grep -q nasm; then
         echo "Installing nasm at /opt/homebrew/bin"
@@ -212,7 +203,6 @@ install_nasm() {
     fi
 }
 
-# Function to install qemu
 install_qemu() {
     if ! brew list | grep -q qemu; then
         echo "Installing qemu at /opt/homebrew/bin"
