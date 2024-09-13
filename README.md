@@ -8,15 +8,9 @@ Gos requires Make >= 3.
 ### Setting Up
 
 You need a crosscompiler to compile the kernel on MacOS, since your default system compiler 
-assumes you are writing code that will run on your hosted operating system. Get one by running:
+assumes you are writing code that will run on your hosted operating system. You can install one by running the `install_cross_compiler.sh` script.
 
-```shell
-make cross_compiler
-```
-
-This builds a crosscompiler targeting an x86-64 architecture and will take a few minutes to complete.
-
-The crosscompiler's binary will be available at `~/opt/cross/bin` as `x86_64-elf-gcc`.
+This installs a gcc crosscompiler targeting the x86-64 architecture. Once it completes in potentially a few minutes, the binary will be available at `~/opt/cross/bin` as `x86_64-elf-gcc`.
 
 You'll also need QEMU to run the OS:
 

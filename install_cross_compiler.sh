@@ -31,8 +31,7 @@ install_brew() {
 
 # Function to install wget
 install_wget() {
-    install_brew
-    if [ ! -e /opt/homebrew/bin/wget ]; then
+    if ! brew list | grep -q wget; then
         echo "Installing wget at /opt/homebrew/bin"
         brew install wget
     fi
@@ -40,14 +39,15 @@ install_wget() {
 
 # Function to install texinfo
 install_texinfo() {
-    install_brew
-    brew install texinfo
+    if ! brew list | grep -q texinfo; then
+        echo "Installing texinfo at /opt/homebrew/bin"
+        brew install texinfo
+    fi
 }
 
 # Function to install gnu-sed
 install_gnu_sed() {
-    install_brew
-    if [ ! -d /opt/homebrew/Cellar/gnu-sed ]; then
+    if ! brew list | grep -q gnu-sed; then
         echo "Installing gnu-sed at /opt/homebrew/bin"
         brew install gnu-sed
     fi
@@ -204,16 +204,27 @@ build_cross_compiler() {
     sudo make install-target-libgcc
 }
 
-# Function to install wget
+# Function to install nasm
 install_nasm() {
-    install_brew
-    if [ ! -e /opt/homebrew/bin/nasm ]; then
+    if ! brew list | grep -q nasm; then
         echo "Installing nasm at /opt/homebrew/bin"
         brew install nasm
     fi
 }
 
-# Main execution
+# Function to install qemu
+install_qemu() {
+    if ! brew list | grep -q qemu; then
+        echo "Installing qemu at /opt/homebrew/bin"
+        brew install qemu
+    fi
+}
+
+# Install dependencies
+install_brew
 install_nasm
+install_qemu
+
+# Install cross-compiler
 build_cross_compiler
 echo "Cross-compiler installation complete!"
