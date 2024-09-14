@@ -29,8 +29,6 @@ call printf
 call load_kernel			; load the kernel into memory
 
 ; TODO: remove
-mov dx, [KERNEL_OFFSET] 	; print the first byte loaded into memory
-call printh
 jmp $
 
 call switch_to_lm			; we never return from here
@@ -45,7 +43,7 @@ MSG_LOAD_KERNEL	db "Loading kernel into memory.", 0x0a, 0x0d, 0
 
 
 ; -----------------------------------------------------------------------------
-; load_kernel loads the kernel code from disk into KERNEL_OFFSET offset
+; load_kernel: loads the kernel code from disk into KERNEL_OFFSET address.
 ; -----------------------------------------------------------------------------
 load_kernel:
 	mov si, MSG_LOAD_KERNEL		; print a message to say we are loading the kernel
@@ -66,18 +64,24 @@ load_disk:
 	pusha
                         
     mov ah, 0x02        		; BIOS read sectors function
-    mov dl, [BOOT_DRIVE]	    ; from first boot disk
+    mov dl, [BOOT_DRIVE]	    ; read from disk containing the boot sector
     mov dh, 0           		; head 0
     mov ch, 0           		; cylinder 0
-    mov cl, 2           		; start reading from second sector. That is, after boot sector
+    mov cl, 2           		; start reading from second sector (i.e., skip boot sector)
 
-    int 0x13            ; issue read
+    int 0x13           	 		; issue read
 
-    jc disk_error       ; catch errors
-    mov si, DISK_SUCCESS_MSG
+    jc disk_error       		; catch errors
+
+    mov si, DISK_SUCCESS_MSG	; print success
     call printf
+
+	mov dx, [KERNEL_OFFSET] 	; print the first byte loaded into memory
+	call printh
+
     popa
     ret
+
     disk_error:
         mov si, DISK_ERROR_MSG
         call printf
@@ -186,7 +190,7 @@ DATA_SEG equ gdt_data - gdt_start
 ; -----------------------------------------------------------------------------
 switch_to_lm:
 	cli						; switch off interrupts until we have set-up the 
-							; protected mode interrupt vector otherwise 
+							; protected mode interrupt vector. Otherwise 
 							; interrupts will fail
 
 	lgdt [gdt_descriptor]	; load the global descriptor table, which defines
@@ -268,5 +272,5 @@ printf_lm_done:
 times 510-($-$$) db 0
 dw 0xaa55
 
-times 256 dw 0xdada
-times 256 dw 0xface
+times 1 dw 0xdada
+times 511 dw 0xdede
