@@ -27,9 +27,6 @@ call printf
 
 call load_kernel			; load the kernel into memory
 
-; TODO: remove
-jmp $
-
 call switch_to_pm			; we never return from here
 
 jmp $
@@ -37,7 +34,7 @@ jmp $
 ; Global variables
 BOOT_DRIVE		db 0
 MSG_REAL_MODE	db "Started in 16-bit real mode", 0x0a, 0x0d, 0
-MSG_PROT_MODE	db "Succesfully landed in 64-bit long mode", 0x0a, 0x0d, 0
+MSG_PROT_MODE	db "Succesfully landed in 32-bit long mode", 0x0a, 0x0d, 0
 MSG_LOAD_KERNEL	db "Loading kernel into memory.", 0x0a, 0x0d, 0
 
 
@@ -213,20 +210,20 @@ switch_to_pm:
 
 	lgdt [gdt_descriptor]	; load the global descriptor table, which defines
 							; the protected mode segments (e.g. for code and
-							; data)
+							; data), into the GDTR register.
 	
 	mov eax, cr0			; to make the switch to protected mode, we set 
 	or eax, 0x1				; the first byte of CR0, a control regisiter
 	mov cr0, eax
 
-	jmp CODE_SEG:init_lm	; Make a far jump (i.e. to a new segment) to our
-							; 64-bit code. This also forces the CPU to flush
-							; its cache of pre-fetched and real-mode decoded
-							; instructions, whicc could cause problems.
+	jmp CODE_SEG:init_pm	; Make a far jump (i.e. to a new segment) to our
+							; 64-bit code. This also forces the CPU to finnish
+							; any jobs in its pipeline of instructions, before
+							; we can be sure that the switch is complete.
 
-[bits 64]
+[bits 32]
 ; Initialize registers and the stack once in PM.
-init_lm:
+init_pm:
 	mov ax, DATA_SEG		; Now in protected mode, our old segments are
 	mov ds, ax				; meaningless, so we point our segment registers
 	mov ss, ax				; to the data selector we defined in GDT.
@@ -234,17 +231,18 @@ init_lm:
 	mov fs, ax
 	mov gs, ax
 
-	mov ebp, 0x90000
+	mov ebp, 0x90000		; Update stack right at the top of the free space
 	mov esp, ebp
 
-	call BEGIN_LM
+	call BEGIN_PM
 
 ; -----------------------------------------------------------------------------
-; This is where we arrive after switching to and initializing long mode
+; This is where we arrive after switching to and initializing protected mode
 ; -----------------------------------------------------------------------------
-BEGIN_LM:
-	mov rbx, MSG_PROT_MODE
+BEGIN_PM:
+	mov ebx, MSG_PROT_MODE
 	call printf_lm
+	jmp $
 
 	call KERNEL_OFFSET
 
@@ -265,26 +263,26 @@ WHITE_ON_BLACK equ 0x0f
 
 ; print_pm prints a null terminated string pointed to by EBX
 printf_lm:
-	push rdx
-	push rax
-	mov rdx, SCREEN_ADDR		; set edx to start of video memory
+	push edx
+	push eax
+	mov edx, SCREEN_ADDR		; set edx to start of video memory
 
 printf_lm_loop:
-	mov al, [rbx]				; store the character at EBX in AL
+	mov al, [ebx]				; store the character at EBX in AL
 	mov ah, WHITE_ON_BLACK		; store attributes in AH
 
 	cmp al, 0					; if (al == 0), at end of string, so
 	je printf_lm_done				; jump to done
 
-	mov [rdx], ax				; else, store char and attributes at screen cell
+	mov [edx], ax				; else, store char and attributes at screen cell
 
-	add rbx, 1					; go to next char
-	add rdx, 2					; go to next cell
+	add ebx, 1					; go to next char
+	add edx, 2					; go to next cell
 	jmp printf_lm_loop
 
 printf_lm_done:
-	pop rax						; restore all resgisters
-	pop rdx						
+	pop eax						; restore all resgisters
+	pop edx						
 	ret
 
 ;------------------------------------------------------------------------------
