@@ -1,4 +1,3 @@
-.globl boot_start			; entry point
 ; -----------------------------------------------------------------------------
 ; BOOT_LOADER:	This first 512 bytes are initially in some physical disk. It's
 ;				identified by the BIOS routine as the intended boot sector by
@@ -11,7 +10,7 @@
 							; this is equivalent to setting the special data segment
 							; DS register to 0x7c0.
 
-mov bp, boot_start			; set the stack base pointer to be right where the boot sector
+mov bp, 0x7c00				; set the stack base pointer to be right where the boot sector
 mov sp, bp					; above the boot sector is loaded, growing downward.
 
 mov [BOOT_DRIVE], dl		; BIOS stores in 'dl' the disk wherein it found this sector.
@@ -245,7 +244,7 @@ init_lm:
 ; -----------------------------------------------------------------------------
 BEGIN_LM:
 	mov rbx, MSG_PROT_MODE
-	call printf_pm
+	call printf_lm
 
 	call KERNEL_OFFSET
 
@@ -253,9 +252,9 @@ BEGIN_LM:
 
 
 ;------------------------------------------------------------------------------
-; printf_pm:	in 32-bit protected mode, we no longer have access to the useful 
+; printf_lm:	in 64-bit long mode, we no longer have access to the useful 
 ;				BIOS functions we use in the printf and printh routines above.
-;				We define a new printf_pm function that prints characters to
+;				We define a new printf_lm function that prints characters to
 ;				the screen by writing the the Virtual Graphics Array (VGA)
 ;				memory-mapped region.
 ; -----------------------------------------------------------------------------
@@ -265,25 +264,27 @@ SCREEN_ADDR equ 0xb8000			; the 80x25 byte VGA memory-mapped region
 WHITE_ON_BLACK equ 0x0f
 
 ; print_pm prints a null terminated string pointed to by EBX
-printf_pm:
-	pusha						; save all registers in the stack
+printf_lm:
+	push rdx
+	push rax
 	mov rdx, SCREEN_ADDR		; set edx to start of video memory
 
-printf_pm_loop:
+printf_lm_loop:
 	mov al, [rbx]				; store the character at EBX in AL
 	mov ah, WHITE_ON_BLACK		; store attributes in AH
 
 	cmp al, 0					; if (al == 0), at end of string, so
-	je printf_pm_done				; jump to done
+	je printf_lm_done				; jump to done
 
 	mov [rdx], ax				; else, store char and attributes at screen cell
 
 	add rbx, 1					; go to next char
 	add rdx, 2					; go to next cell
-	jmp printf_pm_loop
+	jmp printf_lm_loop
 
-printf_pm_done:
-	popa						; restore all resgisters
+printf_lm_done:
+	pop rax						; restore all resgisters
+	pop rdx						
 	ret
 
 ;------------------------------------------------------------------------------
