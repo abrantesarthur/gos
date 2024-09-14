@@ -1,3 +1,4 @@
+.globl boot_start			; entry point
 ; -----------------------------------------------------------------------------
 ; BOOT_LOADER:	This first 512 bytes are initially in some physical disk. It's
 ;				identified by the BIOS routine as the intended boot sector by
@@ -10,9 +11,8 @@
 							; this is equivalent to setting the special data segment
 							; DS register to 0x7c0.
 
-mov bp, 0x8c00				; set the stack base pointer safely above the boot sector
-mov sp, bp					; keep in mind that the stack grows downwards, so it has 
-							; 0x8c00 - 0x7c00 = 0x1000 (i.e., 4k) bytes of space.
+mov bp, boot_start			; set the stack base pointer to be right where the boot sector
+mov sp, bp					; above the boot sector is loaded, growing downward.
 
 mov [BOOT_DRIVE], dl		; BIOS stores in 'dl' the disk wherein it found this sector.
 							; We save this disk number in memory so we can safely modify
