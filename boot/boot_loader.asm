@@ -19,7 +19,7 @@ mov [BOOT_DRIVE], dl		; BIOS stores in 'dl' the disk wherein it found this secto
 							; 'dl' without losing this information.
 
 
-KERNEL_OFFSET equ 0x9c00	; define a constant specifying the address where we'll load
+KERNEL_OFFSET equ 0x8c00	; define a constant specifying the address where we'll load
 							; load the kernel 4k bytes above the stack base.
 
 
@@ -31,7 +31,7 @@ call load_kernel			; load the kernel into memory
 ; TODO: remove
 jmp $
 
-call switch_to_lm			; we never return from here
+call switch_to_pm			; we never return from here
 
 jmp $
 
@@ -192,18 +192,22 @@ gdt_data:
 
 gdt_end:
 
+; -----------------------------------------------------------------------------
 ; GDT descriptor
+;	Holds information about the GDT size and start address, which are needed
+;	by the CPU to setup the GDT.
+; -----------------------------------------------------------------------------
 gdt_descriptor:
-	dw gdt_end - gdt_start - 1		; GDT size, always one less than true
-	dd gdt_start					; GDT start address
+	dw gdt_end - gdt_start - 1		; bits 0-15: GDT size, always one less than true
+	dd gdt_start					; bits 16-31: GDT start address
 
 CODE_SEG equ gdt_code - gdt_start
 DATA_SEG equ gdt_data - gdt_start
 
 ; -----------------------------------------------------------------------------
-; Switch 32-bit to long mode
+; Switch to 32-bit protected mode
 ; -----------------------------------------------------------------------------
-switch_to_lm:
+switch_to_pm:
 	cli						; switch off interrupts until we have set-up the 
 							; protected mode interrupt vector. Otherwise 
 							; interrupts will fail
@@ -241,7 +245,7 @@ init_lm:
 ; -----------------------------------------------------------------------------
 BEGIN_LM:
 	mov rbx, MSG_PROT_MODE
-	call printf_lm
+	call printf_pm
 
 	call KERNEL_OFFSET
 
@@ -249,9 +253,9 @@ BEGIN_LM:
 
 
 ;------------------------------------------------------------------------------
-; printf_lm:	in 32-bit long mode, we no longer have access to the useful 
+; printf_pm:	in 32-bit protected mode, we no longer have access to the useful 
 ;				BIOS functions we use in the printf and printh routines above.
-;				We define a new printf_lm function that prints characters to
+;				We define a new printf_pm function that prints characters to
 ;				the screen by writing the the Virtual Graphics Array (VGA)
 ;				memory-mapped region.
 ; -----------------------------------------------------------------------------
@@ -260,25 +264,25 @@ BEGIN_LM:
 SCREEN_ADDR equ 0xb8000			; the 80x25 byte VGA memory-mapped region 
 WHITE_ON_BLACK equ 0x0f
 
-; print_lm prints a null terminated string pointed to by EBX
-printf_lm:
+; print_pm prints a null terminated string pointed to by EBX
+printf_pm:
 	pusha						; save all registers in the stack
 	mov rdx, SCREEN_ADDR		; set edx to start of video memory
 
-printf_lm_loop:
+printf_pm_loop:
 	mov al, [rbx]				; store the character at EBX in AL
 	mov ah, WHITE_ON_BLACK		; store attributes in AH
 
 	cmp al, 0					; if (al == 0), at end of string, so
-	je printf_lm_done				; jump to done
+	je printf_pm_done				; jump to done
 
 	mov [rdx], ax				; else, store char and attributes at screen cell
 
 	add rbx, 1					; go to next char
 	add rdx, 2					; go to next cell
-	jmp printf_lm_loop
+	jmp printf_pm_loop
 
-printf_lm_done:
+printf_pm_done:
 	popa						; restore all resgisters
 	ret
 
