@@ -1,22 +1,37 @@
 ; -----------------------------------------------------------------------------
-; BOOT_LOADER:	this first 512 bytes are read into memory by the BIOS routine.
-;				it switches the CPU to 64-bit long mode
+; BOOT_LOADER:	This first 512 bytes are initially in some physical disk. It's
+;				identified by the BIOS routine as the intended boot sector by
+;				virtue of its last byte being the magic number 0xaa55. Hence,
+;				it's read into the physical memory address 0x7c00 by the BIOS,
+;				which instructs the CPU to begin executing its instructions.
 ; -----------------------------------------------------------------------------
 [org 0x7c00]				; tell the assembler the address where BIOS loads this
-							; boot sector so it can correctly address labels herein
+							; boot sector so it can correctly address labels herein.
+							; this is equivalent to setting the special data segment
+							; DS register to 0x7c0.
 
-KERNEL_OFFSET equ 0x1000	; Where we'll load the kernel
+mov bp, 0x8c00				; set the stack base pointer safely above the boot sector
+mov sp, bp					; keep in mind that the stack grows downwards, so it has 
+							; 0x8c00 - 0x7c00 = 0x1000 (i.e., 4k) bytes of space.
 
-mov [BOOT_DRIVE], dl		; BIOS stores our boot drive in DL, so let's save
-							; its value before using it
+mov [BOOT_DRIVE], dl		; BIOS stores in 'dl' the disk wherein it found this sector.
+							; We save this disk number in memory so we can safely modify
+							; 'dl' without losing this information.
 
-mov bp, 0x9000				; set the stack
-mov sp, bp
 
-mov si, MSG_REAL_MODE
+KERNEL_OFFSET equ 0x9c00	; define a constant specifying the address where we'll load
+							; load the kernel 4k bytes above the stack base.
+
+
+mov si, MSG_REAL_MODE		; print a message to say we are in real mode
 call printf
 
-call load_kernel
+call load_kernel			; load the kernel into memory
+
+; TODO: remove
+mov dx, [KERNEL_OFFSET] 	; print the first byte loaded into memory
+call printh
+jmp $
 
 call switch_to_lm			; we never return from here
 
@@ -30,30 +45,31 @@ MSG_LOAD_KERNEL	db "Loading kernel into memory.", 0x0a, 0x0d, 0
 
 
 ; -----------------------------------------------------------------------------
-; load_kernel loads the kernel code from disk into offset 0x1000
+; load_kernel loads the kernel code from disk into KERNEL_OFFSET offset
 ; -----------------------------------------------------------------------------
 load_kernel:
 	mov si, MSG_LOAD_KERNEL		; print a message to say we are loading the kernel
 	call printf
 	
-	mov bx, 0x0000
-	mov es, bx
+	mov bx, 0x0000				; load 1 sector from the boot disk to
+	mov es, bx					; ES:BX = 0x0000:KERNEL_OFFSET	
 	mov bx, KERNEL_OFFSET		
-	mov al, 1 					; load 1 sectors	
+	mov al, 1
 	call load_disk
 	ret
 
 ; -----------------------------------------------------------------------------
-; load_disk loads sectors to ES:BX from first floppy disk 
+; load_disk loads sectors to ES:BX memory address from first floppy disk 
+;			'al' should have the amount of sectors to read
 ; -----------------------------------------------------------------------------
 load_disk:
 	pusha
-                        ; interrupt setup
-    mov ah, 0x02        ; read sectors mode
-    mov dl, 0x80	    ; from first floppy disk
-    mov dh, 0           ; select track on 1st side of floppy disk
-    mov ch, 0           ; cylinder
-    mov cl, 2           ; start reading from second sector. That is, after boot sector
+                        
+    mov ah, 0x02        		; BIOS read sectors function
+    mov dl, [BOOT_DRIVE]	    ; from first boot disk
+    mov dh, 0           		; head 0
+    mov ch, 0           		; cylinder 0
+    mov cl, 2           		; start reading from second sector. That is, after boot sector
 
     int 0x13            ; issue read
 
@@ -251,3 +267,6 @@ printf_lm_done:
 
 times 510-($-$$) db 0
 dw 0xaa55
+
+times 256 dw 0xdada
+times 256 dw 0xface
