@@ -49,10 +49,10 @@ load_kernel:
 	mov si, MSG_LOAD_KERNEL		; print a message to say we are loading the kernel
 	call printf
 	
-	mov bx, 0x0000				; load 1 sector from the boot disk to
-	mov es, bx					; ES:BX = 0x0000:KERNEL_OFFSET	
+	mov bx, 0x0000				; The ES:BX value specifies the physical memory address
+	mov es, bx					; the disk will be loaded
 	mov bx, KERNEL_OFFSET		
-	mov al, 1
+	mov al, 1					; the number of 512b sectors to read
 	call load_disk
 	ret
 
@@ -67,9 +67,9 @@ load_disk:
     mov dl, [BOOT_DRIVE]	    ; read from disk containing the boot sector
     mov dh, 0           		; head 0
     mov ch, 0           		; cylinder 0
-    mov cl, 2           		; start reading from second sector (i.e., skip boot sector)
+    mov cl, 2           		; start reading from second sector (i.e., skip this boot sector)
 
-    int 0x13           	 		; issue read
+    int 0x13           	 		; issue BIOS function to read from disk
 
     jc disk_error       		; catch errors
 
@@ -145,19 +145,31 @@ HEX_PATTERN: db "0x****", 0x0a, 0x0d, 0
 HEX_TABLE: db "0123456789abcdef"
 
 ; -----------------------------------------------------------------------------
-; Global Descriptor Table
+; GLOBAL DESCRIPTOR TABLE (32 bit mode)
+;	It's comprised of 8-byte Segment descriptors, each of which defines the following
+;	properties of a protected-mode segment:
+;		1. Base Address (32 bits): where the segment starts in memory
+;		2. Segment Limit (20 bits): the size of the segment
+;		3. Various flags, affeting the priviledge of code within it, etc.
+;	These 8-byte segments are indexed by special segment registers.
+; 	Important: these bits are not continuous. The 20 bits of the Segment Limit,
+;	for instance, are split in a continous 16 and 4 bit chunks.
 ; -----------------------------------------------------------------------------
 gdt_start:
 
-gdt_null:							; the mandatory null descriptor
-	dd 0x0							; 8 bytes = one GDT segment
-	dd 0x0
+; The first 8-byte segment descriptor must be null!
+gdt_null:
+	dd 0x0			; dd stands for "define double word" (4 bytes)
+	dd 0x0			; we use two dd instructions to define 8 bytes
 
-gdt_code:	; the code segment descriptor
-	; base=0x0, limit=0xfffff,
-	; 1st flags: (present)1 (privilege)00 (descriptor type)1 -> 1001b
-	; type flags: (code)1 (conforming)0 (readable)1 (accessed)0 -> 1010b
-	; 2nd flags: (granularity)1 (32-bit default)1 (64-bit seg)0 (AVL)0 -> 1100b
+; -----------------------------------------------------------------------------
+; The code Segment descriptor
+; base=0x0, limit=0xfffff
+; 1st flags: (present)1 (privilege)00 (descriptor type)1 -> 1001b
+; type flags: (code)1 (conforming)0 (readable)1 (accessed)0 -> 1010b
+; 2nd flags: (granularity)1 (32-bit default)1 (64-bit seg)0 (AVL)0 -> 1100b
+; -----------------------------------------------------------------------------
+gdt_code:
 	dw 0xffff		; Limit (bits 0-15)
 	dw 0x0			; Base (bits 0-15)
 	db 0x0			; Base (bits 16-23)
@@ -165,9 +177,12 @@ gdt_code:	; the code segment descriptor
 	db 11001111b	; 2nd flags, Limit (bits 16-19)
 	db 0x0			; Base (bits 24-31)
 
-gdt_data:	; the data segment descriptor		
-	; Same as code segment except for the type flags:
-	; type flags: (code)0 (expand down)0 (writable)1 (accessed)0 -> 0010b
+; -----------------------------------------------------------------------------
+; The data segment descriptor
+; Same as code segment except for the type flags:
+; type flags: (code)0 (expand down)0 (writable)1 (accessed)0 -> 0010b
+; -----------------------------------------------------------------------------
+gdt_data:
 	dw 0xffff		; Limit (bits 0-15)
 	dw 0x0			; Base (bits 0-15)
 	db 0x0			; Base (bits 16-23)
@@ -186,7 +201,7 @@ CODE_SEG equ gdt_code - gdt_start
 DATA_SEG equ gdt_data - gdt_start
 
 ; -----------------------------------------------------------------------------
-; Switch to long mode
+; Switch 32-bit to long mode
 ; -----------------------------------------------------------------------------
 switch_to_lm:
 	cli						; switch off interrupts until we have set-up the 
@@ -234,35 +249,37 @@ BEGIN_LM:
 
 
 ;------------------------------------------------------------------------------
-; printf_lm
+; printf_lm:	in 32-bit long mode, we no longer have access to the useful 
+;				BIOS functions we use in the printf and printh routines above.
+;				We define a new printf_lm function that prints characters to
+;				the screen by writing the the Virtual Graphics Array (VGA)
+;				memory-mapped region.
 ; -----------------------------------------------------------------------------
 
 ; Define some contants
-SCREEN_ADDR equ 0xb8000
+SCREEN_ADDR equ 0xb8000			; the 80x25 byte VGA memory-mapped region 
 WHITE_ON_BLACK equ 0x0f
 
-; print_pm prints a null terminated string pointed to by EBX
+; print_lm prints a null terminated string pointed to by EBX
 printf_lm:
-	push rdx
-	push rax
+	pusha						; save all registers in the stack
 	mov rdx, SCREEN_ADDR		; set edx to start of video memory
 
 printf_lm_loop:
 	mov al, [rbx]				; store the character at EBX in AL
-	mov ah, WHITE_ON_BLACK		; Store attributes in AH
+	mov ah, WHITE_ON_BLACK		; store attributes in AH
 
 	cmp al, 0					; if (al == 0), at end of string, so
 	je printf_lm_done				; jump to done
-	
-	mov [rdx], ax				; store char and attributes at screen cell
+
+	mov [rdx], ax				; else, store char and attributes at screen cell
 
 	add rbx, 1					; go to next char
 	add rdx, 2					; go to next cell
 	jmp printf_lm_loop
 
 printf_lm_done:
-	pop rax
-	pop rdx
+	popa						; restore all resgisters
 	ret
 
 ;------------------------------------------------------------------------------
