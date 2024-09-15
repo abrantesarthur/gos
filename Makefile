@@ -23,7 +23,7 @@ kernel/kernel.bin: kernel/kernel_prefix.o ${OBJ}
 	$(LD) -o $@ -Ttext 0x1000 $^ --oformat binary
 
 boot/boot_loader.bin: boot/boot_loader.asm 
-	nasm -f bin $< -o $@
+	nasm -f bin -I boot/ $< -o $@
 
 os-image: boot/boot_loader.bin kernel/kernel.bin
 	cat $^ > $@
