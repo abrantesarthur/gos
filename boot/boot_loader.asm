@@ -10,17 +10,14 @@
 							; this is equivalent to setting the special data segment
 							; DS register to 0x7c0.
 
-mov bp, 0x7c00				; set the stack base pointer to be right where the boot sector
+mov bp, 0x9000				; set the stack base pointer to be right where the boot sector
 mov sp, bp					; above the boot sector is loaded, growing downward.
 
 mov [BOOT_DRIVE], dl		; BIOS stores in 'dl' the disk wherein it found this sector.
 							; We save this disk number in memory so we can safely modify
 							; 'dl' without losing this information.
 
-
-; TODO: consider a better address
-KERNEL_OFFSET equ 0x8c00	; define a constant specifying the address where we'll load
-							; load the kernel 4k bytes above the stack base.s
+KERNEL_OFFSET equ 0x1000	; where we'll load the kernel
 
 mov si, MSG_REAL_MODE		; print a message to say we are in real mode
 call printf
@@ -79,7 +76,7 @@ init_pm:
 	mov fs, ax
 	mov gs, ax
 
-	mov ebp, 0x90000		; Update stack right at the top of the free space
+	mov ebp, 0x9000		; Update stack right at the top of the free space
 	mov esp, ebp
 
 	call BEGIN_PM

@@ -9,7 +9,7 @@ load_kernel:
 	mov bx, 0x0000				; The ES:BX value specifies the physical memory address
 	mov es, bx					; the disk will be loaded
 	mov bx, KERNEL_OFFSET		
-	mov al, 1					; the number of 512b sectors to read
+	mov al, 15					; the number of 512b sectors to read
 	call load_disk
 	ret
 
