@@ -201,7 +201,6 @@ gdt_descriptor:
 CODE_SEG equ gdt_code - gdt_start
 DATA_SEG equ gdt_data - gdt_start
 
-[bits 16]
 ; -----------------------------------------------------------------------------
 ; Switch to 32-bit protected mode
 ; -----------------------------------------------------------------------------
@@ -222,9 +221,13 @@ switch_to_pm:
 							; 32-bit code. This also forces the CPU to finnish
 							; any jobs in its pipeline of instructions, before
 							; we can be sure that the switch is complete.
+							; The physical address we jump to is calculated by
+							; the CPU using the base address from the code segment
+							; descriptor (i.e., 0) and the offset (i.e., init_pm
+							; which is 0x7c00 + its offset in the boot sector).
 
 
-[bits 32]
+[bits 32]					; Tell the assembler that we are in 32-bit mode
 ; Initialize registers and the stack once in PM.
 init_pm:
 	mov ax, DATA_SEG		; Now in protected mode, our old segments are
