@@ -18,9 +18,9 @@ mov [BOOT_DRIVE], dl		; BIOS stores in 'dl' the disk wherein it found this secto
 							; 'dl' without losing this information.
 
 
+; TODO: consider a better address
 KERNEL_OFFSET equ 0x8c00	; define a constant specifying the address where we'll load
-							; load the kernel 4k bytes above the stack base.
-
+							; load the kernel 4k bytes above the stack base.s
 
 mov si, MSG_REAL_MODE		; print a message to say we are in real mode
 call printf
@@ -36,7 +36,7 @@ jmp $
 BOOT_DRIVE		db 0
 MSG_REAL_MODE	db "Started in 16-bit real mode", 0x0a, 0x0d, 0
 MSG_LOAD_KERNEL	db "Loading kernel into memory.", 0x0a, 0x0d, 0
-
+MSG_PROT_MODE	db "Succesfully landed in 32-bit long mode", 0x0a, 0x0d, 0
 
 %include "load_kernel.asm"
 %include "print/printf.asm"
@@ -57,7 +57,7 @@ switch_to_pm:
 	
 	mov eax, cr0			; to make the switch to protected mode, we set 
 	or eax, 0x1				; the first byte of CR0, a control regisiter
-	mov cr0, eax
+	mov cr0, eax			; after this point, we are in PM!
 
 	jmp CODE_SEG:init_pm	; Make a far jump (i.e. to a new segment) to our
 							; 32-bit code. This also forces the CPU to finnish
@@ -96,7 +96,6 @@ BEGIN_PM:
 
 	jmp $					; hang
 
-MSG_PROT_MODE	db "Succesfully landed in 32-bit long mode", 0x0a, 0x0d, 0
 
 %include "print/print_pm.asm"
 
