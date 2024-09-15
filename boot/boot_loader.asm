@@ -25,7 +25,8 @@ KERNEL_OFFSET equ 0x8c00	; define a constant specifying the address where we'll 
 mov si, MSG_REAL_MODE		; print a message to say we are in real mode
 call printf
 
-call load_kernel			; load the kernel into memory
+; TODO: eventually read the kernel from disk
+; call load_kernel			; load the kernel into memory
 
 call switch_to_pm			; we never return from here
 
@@ -34,7 +35,6 @@ jmp $
 ; Global variables
 BOOT_DRIVE		db 0
 MSG_REAL_MODE	db "Started in 16-bit real mode", 0x0a, 0x0d, 0
-MSG_PROT_MODE	db "Succesfully landed in 32-bit long mode", 0x0a, 0x0d, 0
 MSG_LOAD_KERNEL	db "Loading kernel into memory.", 0x0a, 0x0d, 0
 
 
@@ -140,6 +140,7 @@ printh_end:
 HEX_PATTERN: db "0x****", 0x0a, 0x0d, 0                                       
 HEX_TABLE: db "0123456789abcdef"
 
+
 ; -----------------------------------------------------------------------------
 ; GLOBAL DESCRIPTOR TABLE (32 bit mode)
 ;	It's comprised of 8-byte Segment descriptors, each of which defines the following
@@ -160,7 +161,7 @@ gdt_null:
 
 ; -----------------------------------------------------------------------------
 ; The code Segment descriptor
-; base=0x0, limit=0xfffff
+; base=0x0, limit=0xfffff -> the code segment begins at 0x0 and ends at 0xfffff
 ; 1st flags: (present)1 (privilege)00 (descriptor type)1 -> 1001b
 ; type flags: (code)1 (conforming)0 (readable)1 (accessed)0 -> 1010b
 ; 2nd flags: (granularity)1 (32-bit default)1 (64-bit seg)0 (AVL)0 -> 1100b
@@ -200,6 +201,7 @@ gdt_descriptor:
 CODE_SEG equ gdt_code - gdt_start
 DATA_SEG equ gdt_data - gdt_start
 
+[bits 16]
 ; -----------------------------------------------------------------------------
 ; Switch to 32-bit protected mode
 ; -----------------------------------------------------------------------------
@@ -217,9 +219,10 @@ switch_to_pm:
 	mov cr0, eax
 
 	jmp CODE_SEG:init_pm	; Make a far jump (i.e. to a new segment) to our
-							; 64-bit code. This also forces the CPU to finnish
+							; 32-bit code. This also forces the CPU to finnish
 							; any jobs in its pipeline of instructions, before
 							; we can be sure that the switch is complete.
+
 
 [bits 32]
 ; Initialize registers and the stack once in PM.
@@ -241,30 +244,30 @@ init_pm:
 ; -----------------------------------------------------------------------------
 BEGIN_PM:
 	mov ebx, MSG_PROT_MODE
-	call printf_lm
+	call print_pm
 	jmp $
 
 	call KERNEL_OFFSET
 
 	jmp $					; hang
 
+MSG_PROT_MODE	db "Succesfully landed in 32-bit long mode", 0x0a, 0x0d, 0
+
 
 ;------------------------------------------------------------------------------
-; printf_lm:	in 64-bit long mode, we no longer have access to the useful 
+; print_pm:		in 32-bit protected mode, we no longer have access to the useful 
 ;				BIOS functions we use in the printf and printh routines above.
-;				We define a new printf_lm function that prints characters to
+;				We define a new print_pm function that prints characters to
 ;				the screen by writing the the Virtual Graphics Array (VGA)
 ;				memory-mapped region.
 ; -----------------------------------------------------------------------------
-
 ; Define some contants
 SCREEN_ADDR equ 0xb8000			; the 80x25 byte VGA memory-mapped region 
 WHITE_ON_BLACK equ 0x0f
 
 ; print_pm prints a null terminated string pointed to by EBX
-printf_lm:
-	push edx
-	push eax
+print_pm:
+	pusha
 	mov edx, SCREEN_ADDR		; set edx to start of video memory
 
 printf_lm_loop:
@@ -281,16 +284,11 @@ printf_lm_loop:
 	jmp printf_lm_loop
 
 printf_lm_done:
-	pop eax						; restore all resgisters
-	pop edx						
+	popa				
 	ret
 
 ;------------------------------------------------------------------------------
 ; The boot sector must fit in 512 bytes, with the last 2 being a magic number.
 ; -----------------------------------------------------------------------------
-
 times 510-($-$$) db 0
 dw 0xaa55
-
-times 1 dw 0xdada
-times 511 dw 0xdede
