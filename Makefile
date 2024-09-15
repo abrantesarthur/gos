@@ -19,6 +19,7 @@ kernel/kernel_prefix.o: kernel/kernel_prefix.asm
 %.o: %.c
 	$(GCC) -ffreestanding -c $< -o $@
 
+# TODO: the 0x1000 option is where we want to load the kernel in memory
 kernel/kernel.bin: kernel/kernel_prefix.o ${OBJ} 
 	$(LD) -o $@ -Ttext 0x1000 $^ --oformat binary
 
