@@ -17,6 +17,7 @@ mov [BOOT_DRIVE], dl		; BIOS stores in 'dl' the disk wherein it found this secto
 							; We save this disk number in memory so we can safely modify
 							; 'dl' without losing this information.
 
+; TODO: why do we load the kernel at 0x1000?
 KERNEL_OFFSET equ 0x1000	; where we'll load the kernel
 
 mov si, MSG_REAL_MODE		; print a message to say we are in real mode
@@ -87,7 +88,7 @@ BEGIN_PM:
 	mov ebx, MSG_PROT_MODE
 	call print_pm
 
-	call KERNEL_OFFSET		; there must be some function at the kernel loading address!
+	call KERNEL_OFFSET		; jump to the address where we loaded the kernel.
 
 	jmp $					; hang
 

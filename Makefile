@@ -24,8 +24,8 @@ kernel/kernel_prefix.o: kernel/kernel_prefix.asm
 # TODO: remove -m elf_i386 option when compiling for 64 bits.
 # kernel/kernel.bin: kernel/kernel_prefix.o ${OBJ} 
 # 	$(LD) -m elf_i386 -o $@ -Ttext 0x1000 $^ --oformat binary
-kernel/kernel.bin: kernel/kernel.o
-	$(LD) -m elf_i386 -o $@ -Ttext 0x1000 kernel/kernel.o --oformat binary
+kernel/kernel.bin: kernel/kernel_prefix.o kernel/kernel.o
+	$(LD) -m elf_i386 -o $@ -Ttext 0x1000 $^ --oformat binary
 
 boot/boot_loader.bin: boot/boot_loader.asm 
 	nasm -f bin -I boot/ $< -o $@
