@@ -1,4 +1,6 @@
-void some_function(char* c) {}
+void some_function(char* c) {
+
+}
 
 void main() {
 	char* video_memory = (char *) 0xb8000;
