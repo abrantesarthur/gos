@@ -33,7 +33,8 @@ boot/boot_loader.bin: boot/boot_loader.asm
 os-image: boot/boot_loader.bin kernel/kernel.bin
 	cat $^ > $@
 
-clean: ${wildcard *.o *.bin}
+.PHONY:
+clean:
 	rm -f kernel/*.o drivers/*.o kernel/*.bin drivers/*.bin boot/*.bin os-image
 
 # run the boot loader
