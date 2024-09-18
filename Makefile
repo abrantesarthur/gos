@@ -12,16 +12,20 @@ OBJ = ${C_SOURCES:.c=.o}
 .PHONY: os-image clean run-qemu run run-file 
 all: os-image run-qemu
 
+# TODO: use -f elf64 when supporting 64-bit mode
 kernel/kernel_prefix.o: kernel/kernel_prefix.asm 
-	nasm -f elf64 $< -o $@
+	nasm -f elf32 $< -o $@
 
 # compile c files into object files in an environment without a standard library
+# TODO: remove -m32 option when  compiling for 64 bits.
 %.o: %.c
-	$(GCC) -ffreestanding -c $< -o $@
+	$(GCC) -m32 -ffreestanding -c $< -o $@
 
-# TODO: the 0x1000 option is where we want to load the kernel in memory
-kernel/kernel.bin: kernel/kernel_prefix.o ${OBJ} 
-	$(LD) -o $@ -Ttext 0x1000 $^ --oformat binary
+# TODO: remove -m elf_i386 option when compiling for 64 bits.
+# kernel/kernel.bin: kernel/kernel_prefix.o ${OBJ} 
+# 	$(LD) -m elf_i386 -o $@ -Ttext 0x1000 $^ --oformat binary
+kernel/kernel.bin: kernel/kernel.o
+	$(LD) -m elf_i386 -o $@ -Ttext 0x1000 kernel/kernel.o --oformat binary
 
 boot/boot_loader.bin: boot/boot_loader.asm 
 	nasm -f bin -I boot/ $< -o $@
@@ -33,7 +37,7 @@ clean: ${wildcard *.o *.bin}
 	rm kernel/*.o drivers/*.o kernel/*.bin drivers/*.bin boot/*.bin os-image
 
 run-qemu: os-image
-	$(QEMU) -machine pc os-image
+	$(QEMU) -machine pc -fda os-image
 
 .PHONY: 
 run: boot/boot_loader.bin 

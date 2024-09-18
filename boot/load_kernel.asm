@@ -33,8 +33,8 @@ load_disk:
     mov si, DISK_SUCCESS_MSG	; print success
     call printf
 
-	mov dx, [KERNEL_OFFSET] 	; print the first byte loaded into memory
-	call printh
+	; mov dx, [KERNEL_OFFSET] 	; print the first byte loaded into memory
+	; call printh
 
     popa
     ret

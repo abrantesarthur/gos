@@ -23,7 +23,7 @@ mov si, MSG_REAL_MODE		; print a message to say we are in real mode
 call printf
 
 ; TODO: eventually read the kernel from disk
-; call load_kernel			; load the kernel into memory
+call load_kernel			; load the kernel into memory
 
 call switch_to_pm			; we never return from here
 
@@ -87,9 +87,8 @@ init_pm:
 BEGIN_PM:
 	mov ebx, MSG_PROT_MODE
 	call print_pm
-	jmp $
-
-	call KERNEL_OFFSET
+	
+	call KERNEL_OFFSET		; there must be some function at the kernel loading address!
 
 	jmp $					; hang
 
