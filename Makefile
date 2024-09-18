@@ -36,25 +36,18 @@ os-image: boot/boot_loader.bin kernel/kernel.bin
 clean: ${wildcard *.o *.bin}
 	rm kernel/*.o drivers/*.o kernel/*.bin drivers/*.bin boot/*.bin os-image
 
-run-qemu: os-image
+# run the boot loader
+# usage: 'make run-boot-loader'
+# This only switches to 32-bit mode, but does not load the kernel into memory.
+.PHONY: 
+run-boot-loader: boot/boot_loader.bin
+	$(QEMU) -machine pc -fda $<
+
+# run the kernel (boot_loader + kernel)
+.PHONY:
+run: os-image
 	$(QEMU) -machine pc -fda os-image
 
-.PHONY: 
-run: boot/boot_loader.bin 
-	$(QEMU) boot/boot_loader.bin
-
-# run binary file on qemu
-.PHONY:
-run-file:
-	$(eval f := $(filter-out $@,$(MAKECMDGOALS)))
-	nasm -f bin $(f).asm -o $(f).bin && \
-	$(QEMU) $(f).bin
-
-# print binary file as hex
-.PHONY:
-dump-bin:
-	$(eval f := $(filter-out $@,$(MAKECMDGOALS)))
-	od -t x1 -A n $(f)
 
 # catch all rule: prevent errors when arguments don't match anything
 %:

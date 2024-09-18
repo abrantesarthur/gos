@@ -19,3 +19,5 @@ To compile the bootloader and run it on `qemu`:
 ```shell
 make run
 ```
+
+If it goes well, you should see a message saying "X" on the top-left corner of the screen. Pretty cool, huh?

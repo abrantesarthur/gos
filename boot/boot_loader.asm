@@ -87,7 +87,7 @@ init_pm:
 BEGIN_PM:
 	mov ebx, MSG_PROT_MODE
 	call print_pm
-	
+
 	call KERNEL_OFFSET		; there must be some function at the kernel loading address!
 
 	jmp $					; hang
