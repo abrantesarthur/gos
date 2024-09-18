@@ -22,7 +22,6 @@ KERNEL_OFFSET equ 0x1000	; where we'll load the kernel
 mov si, MSG_REAL_MODE		; print a message to say we are in real mode
 call printf
 
-; TODO: eventually read the kernel from disk
 call load_kernel			; load the kernel into memory
 
 call switch_to_pm			; we never return from here
