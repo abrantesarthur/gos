@@ -27,8 +27,6 @@ call load_kernel			; load the kernel into memory
 
 call switch_to_pm			; we never return from here
 
-jmp $
-
 ; Global variables
 BOOT_DRIVE		db 0
 MSG_REAL_MODE	db "Started in 16-bit real mode", 0x0a, 0x0d, 0
