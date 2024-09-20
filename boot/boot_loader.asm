@@ -93,6 +93,24 @@ BEGIN_PM:
 
 %include "print/print_pm.asm"
 
+; -----------------------------------------------------------------------------
+; Activate 64-bit long mode
+; -----------------------------------------------------------------------------
+activate_lm:
+	; disable paging by clearing the PG bit in CR0
+	mov eax, cr0
+	and eax, 0x7FFFFFFF
+	mov cr0, eax
+
+	; enable physical address extension by setting the PAE bit in CR4
+	mov eax, cr4
+	or eax, 1 << 5
+	mov cr4, eax
+
+	
+	
+
+
 ;------------------------------------------------------------------------------
 ; The boot sector must fit in 512 bytes, with the last 2 being a magic number.
 ; -----------------------------------------------------------------------------
