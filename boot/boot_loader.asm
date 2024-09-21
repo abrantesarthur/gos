@@ -11,22 +11,25 @@
 							; DS register to 0x7c0.
 
 [bits 16]
-mov bp, 0x9000				; set the stack base pointer to be right where the boot sector
-mov sp, bp					; above the boot sector is loaded, growing downward.
+boot_start: 					; global label to mark the start of the boot sector
+	cli							; clear interrupts. TODO: enable interrupts with sti
+	cld							; String operations increment.  TODO: undo later with std
+	movw bp, boot_start			; set the stack base pointer to be at 0x7c00, growing downward.
+	movw sp, bp
 
-mov [BOOT_DRIVE], dl		; BIOS stores in 'dl' the disk wherein it found this sector.
-							; We save this disk number in memory so we can safely modify
-							; 'dl' without losing this information.
+	mov [BOOT_DRIVE], dl		; BIOS stores in 'dl' the disk wherein it found this sector.
+								; We save this disk number in memory so we can safely modify
+								; 'dl' without losing this information.
 
-; TODO: why do we load the kernel at 0x1000?
-KERNEL_OFFSET equ 0x1000	; where we'll load the kernel
+	; TODO: why do we load the kernel at 0x1000?
+	KERNEL_OFFSET equ 0x1000	; where we'll load the kernel
 
-mov si, MSG_REAL_MODE		; print a message to say we are in real mode
-call printf
+	mov si, MSG_REAL_MODE		; print a message to say we are in real mode
+	call printf
 
-call load_kernel			; load the kernel into memory
+	call load_kernel			; load the kernel into memory
 
-call switch_to_pm			; we never return from here
+	call switch_to_pm			; we never return from here
 
 ; Global variables
 BOOT_DRIVE		db 0
