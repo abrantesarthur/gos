@@ -14,8 +14,8 @@
 boot_start: 					; global label to mark the start of the boot sector
 	cli							; clear interrupts. TODO: enable interrupts with sti
 	cld							; String operations increment.  TODO: undo later with std
-	movw bp, boot_start			; set the stack base pointer to be at 0x7c00, growing downward.
-	movw sp, bp
+	mov bp, boot_start			; set the stack base pointer to be at 0x7c00, growing downward.
+	mov sp, bp
 
 	mov [BOOT_DRIVE], dl		; BIOS stores in 'dl' the disk wherein it found this sector.
 								; We save this disk number in memory so we can safely modify
