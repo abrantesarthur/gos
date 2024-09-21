@@ -2,14 +2,15 @@
 ; BOOT_LOADER:	This first 512 bytes are initially in some physical disk. It's
 ;				identified by the BIOS routine as the intended boot sector by
 ;				virtue of its last byte being the magic number 0xaa55. Hence,
-;				it's read into the physical memory address 0x7c00 by the BIOS,
-;				which instructs the CPU to begin executing its instructions.
+;				it's read into the physical memory address 0x7c00-0x7dff by the
+;				BIOS routine, which instructs the CPU to jump to that address.
 ; -----------------------------------------------------------------------------
 [org 0x7c00]				; tell the assembler the address where BIOS loads this
 							; boot sector so it can correctly address labels herein.
 							; this is equivalent to setting the special data segment
 							; DS register to 0x7c0.
 
+[bits 16]
 mov bp, 0x9000				; set the stack base pointer to be right where the boot sector
 mov sp, bp					; above the boot sector is loaded, growing downward.
 
