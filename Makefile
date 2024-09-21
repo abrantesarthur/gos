@@ -45,7 +45,8 @@ run-boot-loader: boot/boot_loader.bin
 	$(QEMU) -machine pc -fda $<
 
 # run the kernel (boot_loader + kernel)
-# -boot a: boot from floppy disk image we created (i.e. os-image)
+# -fda os-image: the floppy disk image we created
+# -boot a: explicitly boot from that floppy disk image
 .PHONY:
 run: clean os-image
 	$(QEMU) -machine pc -fda os-image -boot a
