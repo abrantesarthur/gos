@@ -21,7 +21,13 @@ boot_start: 					; global label to mark the start of the boot sector
 								; We save this disk number in memory so we can safely modify
 								; 'dl' without losing this information.
 
-	; TODO: why do we load the kernel at 0x1000?
+notify_bios64:					; notify the BIOS that we are going to use 64-bit mode
+	mov ax, 0xec00				; so it can opttimize itself (https://wiki.osdev.org/X86-64)
+	mov bl, 0x02				; we want to use 64-bit mode
+	int 0x15
+
+real_to_pm:
+	; TODO: load the kernel in the same address as chickadee does
 	KERNEL_OFFSET equ 0x1000	; where we'll load the kernel
 
 	mov si, MSG_REAL_MODE		; print a message to say we are in real mode
