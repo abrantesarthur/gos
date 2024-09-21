@@ -35,6 +35,7 @@ real_to_pm:
 	mov si, MSG_REAL_MODE		; print a message to say we are in real mode
 	call printf
 
+	; TODO: load the kernel in a .c file after switching to pm instead of .asm file
 	call load_kernel			; load the kernel into memory
 
 	call switch_to_pm			; we never return from here
