@@ -10,7 +10,6 @@
 							; this is equivalent to setting the special data segment
 							; DS register to 0x7c0.
 
-[bits 16]
 boot_start: 					; global label to mark the start of the boot sector
 	cli							; clear interrupts. TODO: enable interrupts with sti
 	cld							; String operations increment.  TODO: undo later with std
@@ -26,9 +25,12 @@ notify_bios64:					; notify the BIOS that we are going to use 64-bit mode
 	mov bl, 0x02				; we want to use 64-bit mode
 	int 0x15
 
+init_boot_pagetable:			; clear memory for boot pagetable
+
+	
 real_to_pm:
 	; TODO: load the kernel in the same address as chickadee does
-	KERNEL_OFFSET equ 0x1000	; where we'll load the kernel
+	KERNEL_OFFSET equ 0x3000	; where we'll load the kernel
 
 	mov si, MSG_REAL_MODE		; print a message to say we are in real mode
 	call printf

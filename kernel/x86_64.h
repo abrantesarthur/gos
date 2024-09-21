@@ -10,7 +10,7 @@ unsigned char port_byte_in(unsigned short port) {
 	int result;
 	// "=a" (result): store AL in result when finished
 	// "d" (port): load EDX with port
-	__asm__("in %%dx, %%al", : "=a" (result) : "d" (port)); 
+	__asm__("in %%dx, %%al": : "=a" (result) : "d" (port)); 
 	return result
 }
 

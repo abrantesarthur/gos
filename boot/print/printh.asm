@@ -1,5 +1,5 @@
 ; -----------------------------------------------------------------------------
-; printh outputs contents at SI address to the screen
+; printh outputs the 16-bit content at DX address to the screen in hexadecimal
 ; -----------------------------------------------------------------------------
 printh:                                                                       
     pusha                       ; save register state                         
