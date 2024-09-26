@@ -25,11 +25,17 @@ notify_bios64:					; notify the BIOS that we are going to use 64-bit mode
 	mov bl, 0x02				; we want to use 64-bit mode
 	int 0x15
 
-init_boot_pagetable:			; clear memory for boot pagetable
-
+; TODO: continue here
+; -----------------------------------------------------------------------------
+; init_boot_pagetable: 	Set the legacy boot pagetable in 0x1000 - 0x2fff. It has
+;						2 levels tables: a L4 page directory pointer table (highest),
+; 						and a L3 page directory table (lowest). each entry is 8 bytes.
+;						Since each table has 4kb, each table has 512 entries.
+; -----------------------------------------------------------------------------
+init_boot_pagetable:
+		
 	
 real_to_pm:
-	; TODO: load the kernel in the same address as chickadee does
 	KERNEL_OFFSET equ 0x3000	; where we'll load the kernel
 
 	mov si, MSG_REAL_MODE		; print a message to say we are in real mode
@@ -55,10 +61,6 @@ MSG_PROT_MODE	db "Succesfully landed in 32-bit long mode", 0x0a, 0x0d, 0
 ; Switch to 32-bit protected mode
 ; -----------------------------------------------------------------------------
 switch_to_pm:
-	cli						; switch off interrupts until we have set-up the 
-							; protected mode interrupt vector. Otherwise 
-							; interrupts will fail
-
 	lgdt [gdt_descriptor]	; load the global descriptor table, which defines
 							; the protected mode segments (e.g. for code and
 							; data), into the GDTR register.
